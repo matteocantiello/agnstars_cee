@@ -66,7 +66,7 @@ def fig_structure(model):
     axs[1, 1].plot(x, logv, color=C[6])
     axs[1, 1].set_xlabel(r"$\log_{10}\,(r/{\rm R}_\odot)$")
     axs[1, 1].set_ylabel(r"$\log_{10}\,v_{\rm stream}\ \mathrm{[km\,s^{-1}]}$")
-    axs[1, 1].text(3.0, 2.7, r"$v \propto r^{-1/2}$", fontsize=8)
+    axs[1, 1].text(3.2, 2.7, r"$v \propto r^{-1/2}$", fontsize=8)
 
     for ax in axs.flat:
         ax.axvline(x=xshock, color=plotstyle.ORANGE, linestyle=":", lw=1.0)
@@ -126,8 +126,8 @@ def fig_power(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, d_obs=100 * cst.MPC):
     ax.set_xlim(r_merger / RS, a.max() / RS)
     ax.set_ylim(1e27, 1e60)
     leg = ax.legend(loc="lower left", fontsize=8, labelspacing=0.3,
-                    title=r"$10+10\,M_\odot$ at $100$ Mpc",
-                    title_fontsize=8, frameon=True, framealpha=0.85)
+                    title=r"$10+10\,$M$_\odot$ at $100$ Mpc",
+                    title_fontsize=8, frameon=True, framealpha=1.00)
     leg.get_frame().set_edgecolor("none")
 
     # detector frequency bands, mapped onto the separation/frequency axis
@@ -193,14 +193,14 @@ def fig_inspiral(model, masses=(5, 10, 30)):
 
     axs[0].set_xlabel("time since capture [days]")
     axs[0].set_ylabel(r"orbital radius  $r$ [R$_\odot$]")
-    axs[0].legend(loc="center right", title=r"$m_{\rm CO}$", title_fontsize=8)
+    #axs[0].legend(loc="center right", title=r"$m_{\rm CO}$", title_fontsize=8)
     axs[0].axhline(model.r_shock / cst.RSUN, color="0.5", ls="--", lw=0.9)
     #axs[0].text(25, model.r_shock / cst.RSUN * 0.95, "stellar surface",
     #            fontsize=7, color="0.45", ha="center", va="top")
 
     axs[1].set_xlabel(r"capture radius  $r_0$ [R$_\odot$]")
     axs[1].set_ylabel("spiral-in time [yr]")
-    axs[1].legend(loc="upper left", title=r"$m_{\rm CO}$", title_fontsize=8)
+    axs[1].legend(loc="upper left", title=r"$m_{\rm CO}$", title_fontsize=9)
     axs[1].set_xlim(0.7, model.r_shock / cst.RSUN * 1.05)
 
     fig.tight_layout(pad=0.4)
