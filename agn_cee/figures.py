@@ -83,7 +83,13 @@ def fig_power(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, d_obs=100 * cst.MPC):
     RS = cst.RSUN
     a = np.linspace(1e6, 1e13, 1000)
     rho, cs = model.rho_of_r(a), model.cs_of_r(a)
-    vk = physics.v_kepler(m1, m2, a)
+    # BH2's orbital speed at separation a is set by the total interior mass: the
+    # BH binary (m1+m2) plus the enclosed stellar mass M_star(<a), with BH1 held
+    # at the stellar center. Reduces to the binary speed in the deep core
+    # (M_enc -> 0) and to sqrt(G M_star/a) out in the envelope.
+    menc = np.clip(model.menc_of_r(a), 0.0, None)   # guard tiny-a extrapolation
+    vk = np.sqrt(physics.v_kepler(m1, m2, a) ** 2
+                 + physics.v_circular(menc, a) ** 2)
 
     rmin = physics.canto_rmin(m2, vk)
     P_df = physics.dynamical_friction_luminosity(m2, vk, a, cs, rho, rmin)
