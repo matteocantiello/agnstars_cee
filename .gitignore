@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.DS_Store
+
+# Kept locally but not part of this reproducibility package:
+AGN-Stars-Common-Envelope-Evolution/
+literature/
+make_draft_figures.py
+PROJECT_REVIEW.md
