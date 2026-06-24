@@ -126,9 +126,11 @@ def fig_power(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, d_obs=100 * cst.MPC):
     ax.set_xlim(r_merger / RS, a.max() / RS)
     ax.set_ylim(1e27, 1e60)
     leg = ax.legend(loc="lower left", fontsize=8, labelspacing=0.3,
-                    title=r"$10+10\,$M$_\odot$ at $100$ Mpc",
+                    # title=r"$10+10\,$M$_\odot$ at $100$ Mpc",
                     title_fontsize=8, frameon=True, framealpha=1.00)
     leg.get_frame().set_edgecolor("none")
+
+    ax.text(0.7,0.9,r"$10+10\,$M$_\odot$ at $100$ Mpc",transform=ax.transAxes,fontsize=10) 
 
     # detector frequency bands, mapped onto the separation/frequency axis
     detband = [("LISA", 1e-4, 1e-1), ("DECIGO", 1e-2, 1e1), ("LVK", 1e1, 1e3)]
@@ -173,6 +175,7 @@ def fig_power(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, d_obs=100 * cst.MPC):
     axb.set_xlim(r_merger / RS, a.max() / RS)
     axb.legend(loc="lower left", fontsize=8)
     axb1.legend(loc="upper right", fontsize=8)
+    
     return fig
 
 

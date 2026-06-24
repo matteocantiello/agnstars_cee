@@ -18,7 +18,7 @@ OUT = "figures"
 FIGS = [
     ("fig1_structure.pdf",             figures.fig_structure,            "Fig. 1"),
     ("fig3_caseA_inspiral.pdf",        figures.fig_inspiral,             "Fig. 2"),
-    ("fig9_spiral_trajectories.pdf",   review.fig_spiral_trajectories,   "Fig. 3"),
+    ("fig9_spiral_trajectories.pdf",   review.fig_true_trajectories,     "Fig. 3"),
     ("fig2_caseA_powers.pdf",          figures.fig_power,                "Fig. 4"),
     ("fig4_caseB_powers.pdf",          review.fig_power_caseB,           "Fig. 5"),
     ("fig8_energy_deposition.pdf",     review.fig_energy_deposition,     "Fig. 6"),

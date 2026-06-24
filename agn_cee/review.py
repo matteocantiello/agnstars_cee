@@ -535,7 +535,7 @@ def fig_power_caseB(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, d_obs=100 * cst.M
         L_acc = L_acc + physics.accretion_drag_force(rho_c, mi, cs, vi) * vi
     f_gw, h = physics.gw_strain(m1, m2, a, d_obs)
 
-    fig, axs = plt.subplots(2, 1, figsize=(DCOL, 5.6), sharex=True,
+    fig, axs = plt.subplots(2, 1, figsize=(COL, 4.6), sharex=True,
                             gridspec_kw={"height_ratios": [2, 1]})
     plt.subplots_adjust(hspace=0.04)
     ax = axs[0]
@@ -546,8 +546,8 @@ def fig_power_caseB(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, d_obs=100 * cst.M
     ax.loglog(a / RS, L_acc, color=C[0], lw=1.2, ls="--", label="accretion drag")
     ax.set_ylabel(r"power [erg s$^{-1}$]")
     ax.set_xlim(a.min() / RS, a.max() / RS)
-    ax.set_ylim(1e38, 1e55)
-    leg = ax.legend(loc="lower left", fontsize=8, frameon=True, framealpha=0.85)
+    ax.set_ylim(1e38, 1e56)
+    leg = ax.legend(loc="lower left", fontsize=6.0, frameon=True, framealpha=0.85)
     leg.get_frame().set_edgecolor("none")
 
     C_hl = np.median(h / L_gw ** 0.2)
@@ -579,7 +579,7 @@ def fig_power_caseB(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, d_obs=100 * cst.M
     axb.loglog(a / RS, dg["Mgas_over_Mbbh"], color=C[1], lw=1.6, label=r"$M_{\rm gas}/M_{\rm BBH}$")
     axb.axhline(1.0, color="k", lw=0.8)
     axb.set_xlabel(r"BBH separation $a$ [R$_\odot$]"); axb.set_ylabel("validity diag.")
-    axb.set_ylim(1e-2, 1e2); axb.legend(fontsize=6.5, loc="lower right")
+    axb.set_ylim(1e-3, 1e3); axb.legend(fontsize=5.5, loc="lower left")
     fig.tight_layout(pad=0.4)
     return fig
 
@@ -798,4 +798,117 @@ def fig_spiral_trajectories(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN):
     leg.get_frame().set_facecolor("0.93"); leg.get_frame().set_edgecolor("none")
 
     fig.tight_layout(pad=0.5)
+    return fig
+
+
+def fig_true_trajectories(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN):
+    """Real (integrated) spiral-in trajectories -- the non-schematic analog of
+    fig_spiral_trajectories. Both panels plot the genuine path
+    (r cos phi, r sin phi) with the true accumulated orbital phase
+    phi(t) = int Omega dt; nothing is rescaled.
+
+    (a) A single compact object sinking from the stellar surface to the core
+    (linear radius, true geometry): it orbits the enclosed stellar mass
+    M_enc(r), lingers near the tenuous surface, then plunges through the dense
+    interior. The pink disk marks r < r(M_star = m_BH), where the test-particle
+    treatment fails.
+    (b) The same with a second black hole (BH1) held at the centre, followed to
+    merger (log radius). BH2 orbits M_enc(r) + m1 at the local gas density --
+    identical drag physics to (a) -- and the GW comes from the BH2-BH1 pair.
+    The binary winds ~3000 times, crowding into the gas-GW stall near a few
+    1e-3 Rsun, then plunges to the ISCO. The pink disk marks R_BHL/r > 1
+    (r < ~0.6 Rsun), the 3D-breakdown region. Colour is the time remaining to the
+    endpoint (merger in b, the core in a), log-scaled and floored at 1 s, so the
+    timescale collapse from ~0.1 yr at the surface to seconds at merger is visible.
+    """
+    from matplotlib.collections import LineCollection
+    from matplotlib.colors import LogNorm
+    G, Rsun, GRAY = cst.G, cst.RSUN, "0.9"
+    PINK, DPINK, PINK_BG, CMAP = "#ff5c8a", "#b3004d", "#ffe1ea", "viridis_r"
+
+    def colored_line(ax, x, y, cval, lw, norm):
+        pts = np.array([x, y]).T.reshape(-1, 1, 2)
+        seg = np.concatenate([pts[:-1], pts[1:]], axis=1)
+        lc = LineCollection(seg, cmap=CMAP, lw=lw, zorder=3, rasterized=True, norm=norm)
+        lc.set_array(np.clip(cval, norm.vmin, norm.vmax)); ax.add_collection(lc)
+        return lc
+
+    # ---- (a) single CO: true integrated spiral, surface -> core (linear radius) ----
+    solA = inspiral.spiral_in_time(model, m2, model.r_shock, n=200000)
+    rA, mencA, LtA = solA["r"], solA["m_enc"], solA["L_total"]
+    omA = np.sqrt(G * mencA / rA**3)
+    LangA = m2 * np.sqrt(G * mencA * rA)
+    dtA = np.gradient(LangA, rA) * omA / LtA
+    phiA = cumulative_trapezoid(omA * dtA, rA, initial=0.0)
+    tA = cumulative_trapezoid(dtA, rA, initial=0.0)
+    phA = np.linspace(0.0, phiA[-1], int(phiA[-1] / (2 * np.pi) * 200))
+    rrA = np.interp(phA, phiA, rA) / Rsun
+    tmergeA = np.interp(phA, phiA, tA)                    # time remaining to the core [s]
+    xA, yA = rrA * np.cos(phA), rrA * np.sin(phA)
+    Rstar, rbreak = model.r_shock / Rsun, solA["r_final"] / Rsun
+
+    # ---- (b) CO + central BH: true trajectory all the way to the ISCO (log radius) ----
+    # channel_luminosities has no inner floor (spiral_in_time clips at the profile
+    # edge), so we integrate the binary hardening into the uniform core (rho->rho_c).
+    aend, asurf = bbh.a_isco(m1, m2), model.r_shock
+    rB = np.logspace(np.log10(aend), np.log10(asurf), 300000)
+    chB = inspiral.channel_luminosities(model, m2, rB, m_central=m1)
+    vcB, mencB, csB = chB["v_c"], chB["m_enc"], chB["cs"]
+    omB = vcB / rB
+    LangB = m2 * np.sqrt(G * mencB * rB)
+    dtB = np.gradient(LangB, rB) * omB / chB["L_total"]
+    phiB = cumulative_trapezoid(omB * dtB, rB, initial=0.0)
+    tB = cumulative_trapezoid(dtB, rB, initial=0.0)
+    RBHL_r = (2 * G * m2 / (vcB**2 + csB**2)) / rB        # per-component Bondi / orbital radius
+    ib = np.where(RBHL_r > 1)[0]
+    a_brk = rB[ib[-1]] if len(ib) else rB[0]
+    umax = np.log10(asurf / aend)
+    _rp = lambda av: np.log10(av / aend) / umax          # 0 = ISCO (centre), 1 = surface
+    phB = np.linspace(0.0, phiB[-1], int(phiB[-1] / (2 * np.pi) * 50))
+    rpB = _rp(np.interp(phB, phiB, rB))
+    tmergeB = np.interp(phB, phiB, tB)                    # time remaining to merger [s]
+    xB, yB = rpB * np.cos(phB), rpB * np.sin(phB)
+
+    # log colour: time remaining to the endpoint, floored at 1 s (spans ~0.1 yr -> seconds)
+    norm = LogNorm(vmin=1.0, vmax=max(tmergeA.max(), tmergeB.max()))
+    FRAC = 0.88
+    La, Lb = Rstar / FRAC, 1.0 / FRAC                    # same circle-to-box fraction in both
+
+    fig, (axA, axB) = plt.subplots(1, 2, figsize=(DCOL, 3.95))
+    fig.subplots_adjust(left=0.065, right=0.875, bottom=0.13, top=0.97, wspace=0.24)
+
+    # (a) single compact object -- linear radius, true geometry
+    axA.add_patch(plt.Circle((0, 0), Rstar, fc=GRAY, ec="k", lw=1.4, zorder=1))
+    axA.add_patch(plt.Circle((0, 0), rbreak, fc=PINK, ec="none", alpha=0.9, zorder=2))
+    colored_line(axA, xA, yA, tmergeA, 0.45, norm)
+    axA.plot(0, 0, "+", color="k", ms=8, mew=1.4, zorder=5)
+    axA.set_xlim(-La, La); axA.set_ylim(-La, La); axA.set_aspect("equal")
+    axA.set_xlabel(r"$x$ [$R_\odot$]"); axA.set_ylabel(r"$y$ [$R_\odot$]")
+    axA.text(0.035, 0.965, "(a)", transform=axA.transAxes, va="top", ha="left",
+             fontweight="bold", fontsize=11)
+
+    # (b) compact object + central BH -- log radius, to the ISCO
+    axB.add_patch(plt.Circle((0, 0), 1.0, fc=GRAY, ec="none", zorder=0))             # stellar interior
+    axB.add_patch(plt.Circle((0, 0), _rp(a_brk), fc=PINK_BG, ec="none", zorder=1))
+    lcB = colored_line(axB, xB, yB, tmergeB, 0.2, norm)
+    axB.add_patch(plt.Circle((0, 0), 1.0, fc="none", ec="k", lw=1.4, zorder=4))   # stellar surface
+    axB.plot(0, 0, "+", color="k", ms=8, mew=1.4, zorder=6)
+    axB.text(0.5, 0.785, r"needs 3D ($R_{\rm BHL}/r>1$)", transform=axB.transAxes,
+             color=DPINK, ha="center", va="center", fontsize=7.0, zorder=6,
+             bbox=dict(boxstyle="round,pad=0.2", fc="white", ec="none", alpha=0.85))
+    tk = [_rp(av) for av in (1e-3 * Rsun, 1e-2 * Rsun, 0.1 * Rsun, Rsun, 10 * Rsun)]
+    tl = [r"$10^{-3}$", r"$10^{-2}$", r"$0.1$", r"$1$", r"$10$"]
+    axB.set_xticks([-t for t in tk[::-1]] + tk); axB.set_xticklabels(tl[::-1] + tl, fontsize=6.0)
+    axB.set_yticks([-t for t in tk[::-1]] + tk); axB.set_yticklabels(tl[::-1] + tl, fontsize=6.0)
+    axB.set_xlim(-Lb, Lb); axB.set_ylim(-Lb, Lb); axB.set_aspect("equal")
+    axB.set_xlabel(r"$r$ [$R_\odot$] (log radius)"); axB.set_ylabel(r"$r$ [$R_\odot$] (log radius)")
+    axB.text(0.035, 0.965, "(b)", transform=axB.transAxes, va="top", ha="left",
+             fontweight="bold", fontsize=11)
+
+    # colorbar pinned to exactly the height of the (square, equal-aspect) panels
+    fig.canvas.draw()
+    pos = axB.get_position()
+    cax = fig.add_axes([pos.x1 + 0.013, pos.y0, 0.015, pos.height])
+    cb = fig.colorbar(lcB, cax=cax)
+    cb.set_label("time to merger / core [s]")
     return fig
