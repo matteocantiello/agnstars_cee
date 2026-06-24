@@ -488,24 +488,28 @@ def fig_hardening_ladder(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN):
     rho_c = model.rho_c
     a = np.logspace(np.log10(3e-3 * cst.RSUN), np.log10(3 * cst.RSUN), 400)
 
-    fig, ax = plt.subplots(figsize=(DCOL, 3.7))
+    # short legend labels (the full names in HARDENING_MODELS are too long for a
+    # single-column legend; each rung is described in Appendix B)
+    short = {0: "independent", 1: "linear + KKSS08", 2: "nonlinear + KKSS08 (fid.)",
+             3: "CE wind-tunnel", 4: "shared-Bondi", 5: "scaled companion"}
+    fig, ax = plt.subplots(figsize=(COL, 3.0))
     styles = {0: ("0.45", "--"), 1: (C[1], ":"), 2: (C[6], "-"),
               3: (C[0], "-."), 4: (C[4], ":"), 5: (C[3], (0, (3, 1, 1, 1)))}
     for mdl in range(6):
         dadt_tot, dadt_gw = dadt_model(m1, m2, a, rho_c, cs, model=mdl)
         col, ls = styles[mdl]
-        lw = 2.6 if mdl == 2 else 1.4
+        lw = 2.2 if mdl == 2 else 1.3
         ax.loglog(a / cst.RSUN, np.abs((dadt_tot - dadt_gw) / dadt_gw),
-                  color=col, ls=ls, lw=lw, label=HARDENING_MODELS[mdl])
+                  color=col, ls=ls, lw=lw, label=short[mdl])
     ax.axhline(1.0, color="k", lw=0.8)
-    ax.text(0.985, 0.965, "gas-dominated hardening", transform=ax.transAxes,
-            ha="right", va="top", fontsize=7.5, color="0.35")
+    ax.text(0.97, 0.045, "gas-dominated hardening", transform=ax.transAxes,
+            ha="right", va="bottom", fontsize=6.5, color="0.35")
     ax.set_xlabel(r"BBH separation $a$ [R$_\odot$]")
     ax.set_ylabel(r"hardening-rate ratio $|\dot a_{\rm gas}|/|\dot a_{\rm GW}|$")
     ax.set_xlim(a.min() / cst.RSUN, a.max() / cst.RSUN)
-    ax.set_ylim(1e-2, 1e14)
-    leg = ax.legend(fontsize=8, loc="upper left", labelspacing=0.3, ncol=2,
-                    frameon=True, framealpha=0.9)
+    ax.set_ylim(1e-2, 1e15)
+    leg = ax.legend(fontsize=6.5, loc="upper left", labelspacing=0.25, ncol=1,
+                    handlelength=2.2, borderaxespad=0.4, frameon=True, framealpha=0.9)
     leg.get_frame().set_edgecolor("none")
     fig.tight_layout(pad=0.4)
     return fig
