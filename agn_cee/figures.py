@@ -248,8 +248,53 @@ def fig_bbh(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN):
 
 
 # --------------------------------------------------------------------------- #
-# Figure 5 : GW dephasing (Case B)  
+# Figure 5 : GW dephasing (Case B)
 # --------------------------------------------------------------------------- #
+def add_dN_chirp_inset(ax, rect=(0.065, 0.12, 0.45, 0.40)):
+    """Schematic inset explaining the dephasing diagnostic delta N(>f).
+
+    Starting from the same observed frequency f, the vacuum binary completes more cycles
+    before merger (N_vac) than the gas-hardened one, which chirps faster and merges sooner
+    with fewer cycles (N_star). Their difference is delta N = N_vac - N_star (the quantity
+    on the main vertical axis). NOTE: this is a cycle-COUNT difference, not the area between
+    the two chirps -- the gas binary does more cycles early (faster chirp) but merges sooner.
+    """
+    VAC, GAS, GHOST, RED = "0.4", "#2166ac", "0.78", "#b3001b"
+    iax = ax.inset_axes(rect)
+    iax.set_facecolor("white"); iax.patch.set_alpha(0.97)
+    for s in iax.spines.values():
+        s.set_edgecolor("0.5"); s.set_linewidth(0.8)
+
+    f0, bv, bg, amp = 4.0, 1.5, -1.5, 0.98
+    tv = np.linspace(0, 1, 1600)
+    yv = amp * np.sin(2 * np.pi * (f0 * tv + 0.5 * 8.0 * tv**2))
+    tmg = 0.6
+    tg = np.linspace(0, tmg, 1000)
+    yg = amp * np.sin(2 * np.pi * (f0 * tg + 0.5 * 14.4 * tg**2))
+    tgh = np.linspace(tmg, 1, 700)
+    ygh = amp * np.sin(2 * np.pi * (f0 * tgh + 0.5 * 14.4 * tgh**2))
+
+    iax.plot(tgh, ygh + bg, color=GHOST, lw=1.0, ls=(0, (2, 1.6)))   # cycles never completed
+    iax.plot(tv, yv + bv, color=VAC, lw=1.4)
+    iax.plot(tg, yg + bg, color=GAS, lw=1.8)
+    iax.plot(1.0, bv, "o", color=VAC, ms=4.5, zorder=6)
+    iax.plot(tmg, bg, "o", color=GAS, ms=5.0, zorder=6)
+    iax.plot([1.0, 1.0], [bv - 0.25, bv + 1.25], color=VAC, lw=0.8, ls="--")
+    iax.plot([tmg, tmg], [bg - 0.25, bg + 1.25], color=GAS, lw=0.8, ls="--")
+
+    iax.text(0.015, bv + 1.6, r"same start $f$", fontsize=6.6, color="0.35", va="bottom")
+    iax.text(0.99, bv + 1.45, r"vacuum: $N_{\rm vac}$", fontsize=6.8, color=VAC, ha="right", va="bottom")
+    iax.text(tmg + 0.035, bg + 1.3, "in star: merges sooner,\n" r"fewer cycles $N_{\rm star}$",
+             fontsize=6.8, color=GAS, ha="left", va="bottom")
+    iax.text(0.5, 0.0, r"$\delta N = N_{\rm vac}-N_{\rm star}$", fontsize=8.5, color=RED,
+             ha="center", va="center",
+             bbox=dict(boxstyle="round,pad=0.2", fc="white", ec=RED, lw=0.9))
+    iax.set_title(r"interpreting $\delta N(f)$: cycles from $f$ to merger", fontsize=7.2, pad=2)
+    iax.set_xlim(-0.02, 1.02); iax.set_ylim(bg - 1.7, bv + 2.1)
+    iax.set_xticks([]); iax.set_yticks([])
+    return iax
+
+
 def fig_dephasing(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, a0=5 * cst.RSUN):
     from matplotlib.transforms import blended_transform_factory
     sites = site_conditions(model)
@@ -278,12 +323,14 @@ def fig_dephasing(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, a0=5 * cst.RSUN):
         #     ax.axvline(f_unc, color=col, ls=":", lw=1.2, ymin=0.33, ymax=0.82, alpha=0.9)
 
     ax.axhline(1.0, color="k", lw=0.8)
-    ax.text(2e-4, 1.7, r"$\delta N = 1$", fontsize=10)
+    ax.text(6e2, 1.45, r"$\delta N = 1$", fontsize=9, ha="right", va="bottom")
     ax.set_xlabel(r"GW frequency  $f$ [Hz]")
     ax.set_ylabel(r"dephasing to merger  $\delta N$ [cycles]")
     ax.set_xlim(1e-4, 1e3)
     ax.set_ylim(1e-6, 5e14)
-    ax.legend(loc="lower left", fontsize=10)
+    # legend moved to lower-centre-right to free the lower-left for the explanatory inset
+    ax.legend(loc="lower center", bbox_to_anchor=(0.76, -0.015), fontsize=8.5,
+              framealpha=0.95, borderpad=0.4)
 
     trans = blended_transform_factory(ax.transData, ax.transAxes)
     for j, (name, f0, f1) in enumerate(detband):
@@ -301,6 +348,7 @@ def fig_dephasing(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, a0=5 * cst.RSUN):
             transform=ax.transAxes, ha="right", va="bottom", fontsize=11, color="0.25")
 
     fig.tight_layout(pad=0.4)
+    add_dN_chirp_inset(ax)        # schematic interpretation of delta N (added last, on top)
     return fig
 
 
