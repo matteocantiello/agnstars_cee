@@ -687,7 +687,7 @@ def fig_true_trajectories(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN):
     axA.set_xlabel(r"$x$ [$R_\odot$]"); axA.set_ylabel(r"$y$ [$R_\odot$]")
     axA.text(0.035, 0.965, "(a)", transform=axA.transAxes, va="top", ha="left",
              fontweight="bold", fontsize=11)
-    axA.text(0.035, 0.895, "single CO", transform=axA.transAxes, va="top", ha="left",
+    axA.text(0.035, 0.895, "Single CO", transform=axA.transAxes, va="top", ha="left",
              fontsize=7.5, style="italic", color="0.35")
 
     # (b) compact object + central BH -- log radius, to the ISCO
@@ -707,7 +707,7 @@ def fig_true_trajectories(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN):
     axB.set_xlabel(r"$r$ [$R_\odot$] (log radius)"); axB.set_ylabel(r"$r$ [$R_\odot$] (log radius)")
     axB.text(0.035, 0.965, "(b)", transform=axB.transAxes, va="top", ha="left",
              fontweight="bold", fontsize=11)
-    axB.text(0.035, 0.895, "sequential capture\n(illustrative)", transform=axB.transAxes,
+    axB.text(0.035, 0.895, "Sequential\ncapture", transform=axB.transAxes,
              va="top", ha="left", fontsize=7.5, style="italic", color="0.35")
 
     # colorbar pinned to exactly the height of the (square, equal-aspect) panels
