@@ -124,30 +124,33 @@ def fig_power(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, d_obs=100 * cst.MPC):
     ax.axvline(r_eq / RS, color="k", ls="-.", lw=1.1, label=r"$M_\star(<r){=}M_2$")
     ax.set_ylabel(r"power [erg s$^{-1}$]")
     ax.set_xlim(r_merger / RS, a.max() / RS)
-    ax.set_ylim(1e27, 1e60)
+    ax.set_ylim(1e27, 1e64)            # extra headroom so the band labels clear the top axis
     leg = ax.legend(loc="lower left", fontsize=8, labelspacing=0.3,
                     # title=r"$10+10\,$M$_\odot$ at $100$ Mpc",
                     title_fontsize=8, frameon=True, framealpha=1.00)
     leg.get_frame().set_edgecolor("none")
 
-    ax.text(0.7,0.9,r"$10+10\,$M$_\odot$ at $100$ Mpc",transform=ax.transAxes,fontsize=10) 
+    ax.text(0.8,0.88,r"$10+10\,$M$_\odot$",transform=ax.transAxes,fontsize=12) 
 
-    # detector frequency bands, mapped onto the separation/frequency axis
+    # detector frequency bands, mapped onto the separation axis (same style as Fig. 7)
     detband = [("LISA", 1e-4, 1e-1), ("DECIGO", 1e-2, 1e1), ("LVK", 1e1, 1e3)]
     trans = blended_transform_factory(ax.transData, ax.transAxes)
-    for name, f0, f1 in detband:
+    for j, (name, f0, f1) in enumerate(detband):
         a_hi = physics.separation_from_gw_frequency(m1, m2, f1) / RS  # high f -> small a
         a_lo = physics.separation_from_gw_frequency(m1, m2, f0) / RS
-        ax.axvspan(a_hi, a_lo, color=DETC[name], alpha=0.07)
-        ax.text(np.sqrt(a_hi * a_lo), 0.95, name, transform=trans, ha="center",
-                va="top", fontsize=7.5, color=DETC[name], fontweight="bold")
+        ax.axvspan(a_hi, a_lo, color=DETC[name], alpha=0.06)
+        y = 0.83 + 0.04 * j               # LISA lowest (low-curve side), LVK highest
+        ax.plot([a_hi, a_lo], [y, y], transform=trans, color=DETC[name], lw=5.0,
+                solid_capstyle="butt", clip_on=False)
+        ax.text(np.sqrt(a_hi * a_lo), y + 0.008, name, transform=trans, ha="center",
+                va="bottom", fontsize=7.5, color=DETC[name], fontweight="bold")
 
     # GW strain h and GW power L_GW are both exact power laws of separation a
     # (h ~ a^-1, L_GW ~ a^-5), so h = C * L_GW^(1/5). Rescaling the right axis by
     # this relation (one strain decade per five power decades) lets the single
     # blue GW-power curve also be read as GW strain -- no separate strain line.
     C_hl = np.median(h / P_gw ** 0.2)
-    P_LO, P_HI = 1e27, 1e60
+    P_LO, P_HI = 1e27, 1e64
     ax3 = ax.twinx()
     ax3.set_yscale("log")
     ax3.set_ylim(C_hl * P_LO ** 0.2, C_hl * P_HI ** 0.2)
@@ -175,6 +178,8 @@ def fig_power(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, d_obs=100 * cst.MPC):
     axb.set_xlim(r_merger / RS, a.max() / RS)
     axb.legend(loc="lower left", fontsize=8)
     axb1.legend(loc="upper right", fontsize=8)
+
+    
     
     return fig
 
