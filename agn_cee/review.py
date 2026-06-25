@@ -625,12 +625,12 @@ def fig_characteristic_strain(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, distanc
     ax.fill_between(f, hc_lo, hc_hi, color="0.75", alpha=0.6, lw=0)
     ax.loglog(f, hc_vac, color="0.4", lw=1.3, ls="--", label="same BBH, vacuum")
     ax.loglog(f, hc_fid, color=C[1], lw=2.1, label="BBH in immortal (fiducial)")
-    ax.set_xlim(1e-4, 1e4); ax.set_ylim(1e-26, 5*1e-18)
+    ax.set_xlim(1e-4, 1e4); ax.set_ylim(1e-26, 2*1e-18)
     ax.set_xlabel("frequency [Hz]"); ax.set_ylabel(r"characteristic strain $h_c$")
-    leg = ax.legend(fontsize=8, loc="upper right", ncol=2, frameon=True, framealpha=0.85)
+    leg = ax.legend(fontsize=10, loc="lower right", ncol=2, frameon=True, framealpha=0.85)
     leg.get_frame().set_edgecolor("none")
-    ax.text(0.75, 0.05, f"10+10 M$_\\odot$ at {distance/cst.MPC:.0f} Mpc",
-            transform=ax.transAxes, fontsize=10)
+    ax.text(0.7, 0.91, f"10+10 M$_\\odot$ at {distance/cst.MPC:.0f} Mpc",
+            transform=ax.transAxes, fontsize=12)
     fig.tight_layout(pad=0.4)
     return fig
 
