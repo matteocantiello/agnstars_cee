@@ -114,8 +114,8 @@ def fig_power(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, d_obs=100 * cst.MPC):
     EB_eb = np.concatenate(([EB[0]], EB))
 
     ax = axs[0]
-    ax.loglog(a / RS, P_df, color=C[1], lw=2.0, label="DF drag")
-    ax.loglog(a / RS, P_acc, color=C[0], lw=2.0, label="accretion-drag power")
+    ax.loglog(a / RS, P_df, color=C[1], lw=2.0, label="dynamical friction (single perturber)")
+    ax.loglog(a / RS, P_acc, color=C[0], lw=2.0, label="accretion drag")
     ax.loglog(a / RS, P_gw, color=C[6], lw=2.0, label="GW power (strain)")
     ax.loglog(r_eb / RS, EB_eb, color=C[3], ls=":", lw=1.8, label="stellar binding energy")
     ax.loglog(a / RS, L_acc, color=C[7], ls="--", lw=1.4,
