@@ -504,9 +504,14 @@ def fig_characteristic_strain(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, distanc
     ax.loglog(f, hc_fid, color=C[1], lw=2.1, label="BBH in immortal (fiducial)")
     ax.set_xlim(1e-4, 1e4); ax.set_ylim(1e-26, 2*1e-18)
     ax.set_xlabel("frequency [Hz]"); ax.set_ylabel(r"characteristic strain $h_c$")
-    leg = ax.legend(fontsize=10, loc="lower right", ncol=2, frameon=True, framealpha=1,
-                    fancybox=False, edgecolor="black")
-    leg.get_frame().set_linewidth(0.8)        # ensure the black edge is visible
+    # explicit order so column 2 reads: fiducial, model range, vacuum (legend fills column-major)
+    handles, labels = ax.get_legend_handles_labels()
+    order = ["LISA", "DECIGO", "LVK", "BBH in immortal (fiducial)",
+             "gas-hardening model range", "same BBH, vacuum"]
+    hd = dict(zip(labels, handles))
+    leg = ax.legend([hd[k] for k in order], order, fontsize=10, loc="lower right",
+                    ncol=2, frameon=True, framealpha=1, fancybox=False)
+    leg.get_frame().set_edgecolor("none")     # drop the harsh border, keep the white background
     ax.text(0.7, 0.91, f"10+10 M$_\\odot$ at {distance/cst.MPC:.0f} Mpc",
             transform=ax.transAxes, fontsize=12)
     fig.tight_layout(pad=0.4)
