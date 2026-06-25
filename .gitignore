@@ -4,6 +4,10 @@ __pycache__/
 .pytest_cache/
 .DS_Store
 
+# Scratch render produced by true_inspiral_trajectories.ipynb (duplicate of
+# figures/fig9_spiral_trajectories.pdf); the committed orbit figure is fig_orbit_accumulation.pdf
+fig3_true_trajectories.pdf
+
 # Kept locally but not part of this reproducibility package:
 AGN-Stars-Common-Envelope-Evolution/
 literature/
