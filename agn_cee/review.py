@@ -609,14 +609,18 @@ def fig_true_trajectories(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN):
     M_enc(r), lingers near the tenuous surface, then plunges through the dense
     interior. The pink disk marks r < r(M_star = m_BH), where the test-particle
     treatment fails.
-    (b) The same with a second black hole (BH1) held at the centre, followed to
-    merger (log radius). BH2 orbits M_enc(r) + m1 at the local gas density --
-    identical drag physics to (a) -- and the GW comes from the BH2-BH1 pair.
-    The binary winds ~3000 times, crowding into the gas-GW stall near a few
-    1e-3 Rsun, then plunges to the ISCO. The pink disk marks R_BHL/r > 1
-    (r < ~0.6 Rsun), the 3D-breakdown region. Colour is the time remaining to the
-    endpoint (merger in b, the core in a), log-scaled and floored at 1 s, so the
-    timescale collapse from ~0.1 yr at the surface to seconds at merger is visible.
+    (b) An *illustrative sequential-capture* trajectory: a second black hole (BH1) is
+    held at the centre and BH2 is followed to merger (log radius). BH2 orbits
+    M_enc(r) + m1 at the local gas density with the same single-perturber drag as (a)
+    (``channel_luminosities``), and the GW comes from the BH2-BH1 pair (the central mass
+    m1 only). The binary winds ~3000 times, crowding into the gas-GW stall near a few
+    1e-3 Rsun, then plunges to the ISCO. NOTE: this is a journey through the real stellar
+    profile, NOT the fiducial internal-binary hardening ladder (Model 2) used for the
+    quantitative merger times and Fig. powerB -- it is shown only to visualise where the
+    orbits accumulate. The pink disk marks R_BHL/r > 1 (r < ~0.6 Rsun), the 3D-breakdown
+    region. Colour is the time remaining to the endpoint (merger in b, the core in a),
+    log-scaled and floored at 1 s, so the timescale collapse from ~0.1 yr at the surface
+    to seconds at merger is visible.
     """
     from matplotlib.collections import LineCollection
     from matplotlib.colors import LogNorm
@@ -683,6 +687,8 @@ def fig_true_trajectories(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN):
     axA.set_xlabel(r"$x$ [$R_\odot$]"); axA.set_ylabel(r"$y$ [$R_\odot$]")
     axA.text(0.035, 0.965, "(a)", transform=axA.transAxes, va="top", ha="left",
              fontweight="bold", fontsize=11)
+    axA.text(0.035, 0.895, "single CO", transform=axA.transAxes, va="top", ha="left",
+             fontsize=7.5, style="italic", color="0.35")
 
     # (b) compact object + central BH -- log radius, to the ISCO
     axB.add_patch(plt.Circle((0, 0), 1.0, fc=GRAY, ec="none", zorder=0))             # stellar interior
@@ -701,6 +707,8 @@ def fig_true_trajectories(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN):
     axB.set_xlabel(r"$r$ [$R_\odot$] (log radius)"); axB.set_ylabel(r"$r$ [$R_\odot$] (log radius)")
     axB.text(0.035, 0.965, "(b)", transform=axB.transAxes, va="top", ha="left",
              fontweight="bold", fontsize=11)
+    axB.text(0.035, 0.895, "sequential capture\n(illustrative)", transform=axB.transAxes,
+             va="top", ha="left", fontsize=7.5, style="italic", color="0.35")
 
     # colorbar pinned to exactly the height of the (square, equal-aspect) panels
     fig.canvas.draw()

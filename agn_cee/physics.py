@@ -226,6 +226,14 @@ def dynamical_friction_luminosity(m_p, v_rel, a, cs, rho, rmin=None, C_d=1.0):
 # --------------------------------------------------------------------------- #
 # Gravitational binding energy of a stellar model
 # --------------------------------------------------------------------------- #
+def gamma1_mixture(beta):
+    """Chandrasekhar (1939) first adiabatic exponent Gamma_1 for an ideal-gas + radiation
+    mixture (gas gamma = 5/3). ``beta = P_gas/P_tot``; limits beta->1 give 5/3, beta->0 give 4/3.
+    """
+    beta = np.asarray(beta, dtype=float)
+    return (32.0 - 24.0 * beta - 3.0 * beta**2) / (24.0 - 21.0 * beta)
+
+
 def binding_energy_above(r, m_enc):
     """Gravitational binding energy U(>r) of the material outside radius r [erg].
 

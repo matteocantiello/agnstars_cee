@@ -46,9 +46,13 @@ def channel_luminosities(model, m_co, r, m_central=0.0, C_d=1.0,
         m_co, v_c, r, cs, rho, C_d=C_d) if include_df else np.zeros_like(r)
     L_acc = physics.accretion_drag_luminosity(
         rho, m_co, cs, v_c) if include_acc else np.zeros_like(r)
-    # GW: treat (m_co, M_enc) as an effective binary (meaningful when M_enc is
-    # centrally concentrated, e.g. a central BH). Subdominant otherwise.
-    L_gw = physics.gw_luminosity(m_co, m_enc, r) if include_gw else np.zeros_like(r)
+    # GW: emitted by the compact two-body pair (the CO + a *central* compact object).
+    # We use only ``m_central``, NOT the extended enclosed mass ``m_enc``: the smooth
+    # stellar mass interior to the orbit is not a compact point companion, and treating
+    # M_enc as one would overestimate the GW power in the envelope. For a single CO
+    # (m_central=0) this term vanishes -- GW is negligible and gas drag drives the sink.
+    L_gw = (physics.gw_luminosity(m_co, m_central, r)
+            if (include_gw and m_central > 0.0) else np.zeros_like(r))
 
     L_total = L_df + L_acc + L_gw
     return dict(r=r, rho=rho, cs=cs, m_enc=m_enc, v_c=v_c, mach=mach,
@@ -128,8 +132,14 @@ def destruction_energetics(model, m_co, eta=0.1, kappa=0.34):
     (ii) the accretion energy available, to the stellar binding energy, and
     brackets the destruction timescale between the (feedback-free) Bondi rate
     and the Eddington-limited rate.
+
+    The stellar binding energy is the interior gravitational |Omega| computed from the
+    MESA mass column (``model.omega_bind``), NOT ``model.U_bind[0]`` (which integrates the
+    reconstructed mass over the whole structure including the spherically-integrated
+    accretion stream). ``model.net_binding`` (|Omega|-E_int) is the smaller, radiation-
+    corrected value relevant to actually unbinding the envelope.
     """
-    U_bind = abs(model.U_bind[0])                      # |total binding energy|
+    U_bind = model.omega_bind                          # interior gravitational |Omega| [erg]
     rho_c, cs_c = model.rho_c, model.cs_of_r(model.r[1])
 
     # orbital energy released sinking to where M_enc = m_co
