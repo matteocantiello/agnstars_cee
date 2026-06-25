@@ -498,7 +498,8 @@ def fig_characteristic_strain(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, distanc
         # sky-averaged sensitivity (LVK raw ASD scaled by 1/SKY_AVG=2.5; LISA/DECIGO already averaged)
         hn = np.sqrt(fg * det.DETECTORS[name](fg)) / det.SKY_AVG[name]
         ax.loglog(fg, np.where(np.isfinite(hn), hn, np.nan), color=DETC[name], lw=1.4, label=name)
-    ax.fill_between(f, hc_lo, hc_hi, color="0.75", alpha=0.6, lw=0)
+    ax.fill_between(f, hc_lo, hc_hi, color="0.75", alpha=0.6, lw=0,
+                    label="gas-hardening model range")
     ax.loglog(f, hc_vac, color="0.4", lw=1.3, ls="--", label="same BBH, vacuum")
     ax.loglog(f, hc_fid, color=C[1], lw=2.1, label="BBH in immortal (fiducial)")
     ax.set_xlim(1e-4, 1e4); ax.set_ylim(1e-26, 2*1e-18)
