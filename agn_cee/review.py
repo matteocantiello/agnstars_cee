@@ -430,10 +430,13 @@ def fig_power_caseB(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, d_obs=100 * cst.M
     leg = ax.legend(loc="lower left", fontsize=6.0, frameon=True, framealpha=0.85)
     leg.get_frame().set_edgecolor("none")
 
+    from matplotlib.ticker import FuncFormatter, NullFormatter
     C_hl = np.median(h / L_gw ** 0.2)
     ax3 = ax.twinx(); ax3.set_yscale("log")
     ax3.set_ylim(C_hl * 1e38 ** 0.2, C_hl * 1e54 ** 0.2)
-    ax3.set_ylabel(r"GW strain $h$ (100 Mpc)", color=C[6])
+    ax3.yaxis.set_major_formatter(FuncFormatter(lambda y, _: f"{np.log10(y):.0f}"))  # "-23" not "10^-23"
+    ax3.yaxis.set_minor_formatter(NullFormatter())
+    ax3.set_ylabel(r"GW strain $\log_{10} h$ (100 Mpc)", color=C[6])
     ax3.tick_params(axis="y", colors=C[6]); ax3.spines["right"].set_color(C[6])
 
     f_sel = np.power(10.0, np.round(np.log10(np.logspace(
