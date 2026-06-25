@@ -467,7 +467,8 @@ def fig_power_caseB(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, d_obs=100 * cst.M
     return fig
 
 
-def fig_characteristic_strain(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, distance=100 * cst.MPC):
+def fig_characteristic_strain(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, distance=100 * cst.MPC,
+                              T_obs_yr=4.0):
     """Characteristic strain h_c(f) of the gas-hardened BBH on the LISA/DECIGO/LVK curves.
 
     h_c = A(f) sqrt(n), n = f^2/|fdot| (cycles near f); gas raises |fdot| -> fewer cycles ->
@@ -478,7 +479,7 @@ def fig_characteristic_strain(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, distanc
     a = np.logspace(np.log10(bbh.a_isco(m1, m2)), np.log10(5 * cst.RSUN), 800)
     f, A = physics.gw_strain(m1, m2, a, distance)
     dfda = np.gradient(f, a)
-    T_obs = 4.0 * 365.25 * 86400.0   # nominal mission/observation time [s]
+    T_obs = T_obs_yr * 365.25 * 86400.0   # mission/observation time [s]
 
     def hc_of(dadt):
         # h_c = A sqrt(n_cyc), with the effective cycle count capped at f*T_obs:
@@ -515,8 +516,10 @@ def fig_characteristic_strain(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, distanc
     leg = ax.legend([hd[k] for k in order], order, fontsize=10, loc="lower right",
                     ncol=2, frameon=True, framealpha=1, fancybox=False)
     leg.get_frame().set_edgecolor("none")     # drop the harsh border, keep the white background
-    ax.text(0.7, 0.91, f"{m1/cst.MSUN:.0f}+{m2/cst.MSUN:.0f} M$_\\odot$ at {distance/cst.MPC:.0f} Mpc",
-            transform=ax.transAxes, fontsize=12)
+    label = f"{m1/cst.MSUN:.0f}+{m2/cst.MSUN:.0f} M$_\\odot$ at {distance/cst.MPC:.0f} Mpc"
+    if abs(T_obs_yr - 4.0) > 1e-6:                       # annotate T_obs only when non-default
+        label += f"\n$T_{{\\rm obs}}={T_obs_yr:.0f}$ yr"
+    ax.text(0.7, 0.91, label, transform=ax.transAxes, fontsize=12)
     fig.tight_layout(pad=0.4)
     return fig
 
