@@ -515,7 +515,7 @@ def fig_characteristic_strain(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, distanc
     leg = ax.legend([hd[k] for k in order], order, fontsize=10, loc="lower right",
                     ncol=2, frameon=True, framealpha=1, fancybox=False)
     leg.get_frame().set_edgecolor("none")     # drop the harsh border, keep the white background
-    ax.text(0.7, 0.91, f"10+10 M$_\\odot$ at {distance/cst.MPC:.0f} Mpc",
+    ax.text(0.7, 0.91, f"{m1/cst.MSUN:.0f}+{m2/cst.MSUN:.0f} M$_\\odot$ at {distance/cst.MPC:.0f} Mpc",
             transform=ax.transAxes, fontsize=12)
     fig.tight_layout(pad=0.4)
     return fig
