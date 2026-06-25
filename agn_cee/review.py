@@ -326,7 +326,7 @@ def fig_energy_deposition(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN):
     i = int(np.argmin(np.abs(e["E_gas"] - be["net_binding"])))
     a_cross = e["a"][i] / cst.RSUN
     ax.plot(a_cross, e["E_gas"][i], "o", color="k", ms=5, zorder=5)
-    ax.annotate(f"$E_{{\\rm gas}}$ unbinds core\n($a\\simeq{a_cross:.0e}$ R$_\\odot$)",
+    ax.annotate(f"net binding reached\n($a\\simeq{a_cross:.0e}$ R$_\\odot$)",
                 xy=(a_cross, e["E_gas"][i]), xytext=(a_cross * 0.5, 2.5e51),
                 fontsize=6.5, va="center", ha="left",
                 arrowprops=dict(arrowstyle="->", lw=0.7, color="0.45"))
