@@ -290,8 +290,7 @@ def add_dN_chirp_inset(ax, rect=(0.025, 0.08, 0.40, 0.40)):
              ha="left", va="top")
     iax.text(0.99, bot, r"$N_{\rm star}$ cycles", color=GAS, fontsize=6.6, ha="right", va="top")
     iax.text(0.5, 0.0, r"$\delta N = N_{\rm vac}-N_{\rm star}$", fontsize=8.2, color=RED,
-             ha="center", va="center",
-             bbox=dict(boxstyle="round,pad=0.2", fc="white", ec=RED, lw=0.9))
+             ha="center", va="center")
     iax.set_xlim(-0.02, 1.02); iax.set_ylim(bg - amp - 0.7, bv + amp + 0.7)
     iax.set_xticks([]); iax.set_yticks([])
     return iax
