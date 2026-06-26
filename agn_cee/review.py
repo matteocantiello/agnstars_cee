@@ -524,6 +524,57 @@ def fig_characteristic_strain(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, distanc
     return fig
 
 
+def fig_unequal_mass_strain(model, pairs=((30, 10), (50, 10), (100, 10)),
+                            distance=100 * cst.MPC, T_obs_yr=4.0):
+    """Characteristic strain for *unequal-mass* BBHs hardening in the immortal core.
+
+    Tests the \\citet{KKSS08} asymmetric-wake concern (Barry McKernan): for q=m2/m1<1 the
+    companion wake pushes the lighter BH *forward* (anti-drag) once m1/m2 exceeds
+    I_self/|I_2phi| (~2-3 at the transonic core Mach numbers), which can stall an unequal
+    pair while it is forming in the tenuous AGN disk. Here we show that for a *bound* pair
+    deep in the immortal the net binary torque still hardens: the heavier BH's self-drag
+    (~m1^2) dominates the lighter BH's forward companion wake (~m1 m2), so every track is
+    swept (suppressed) through the LISA/milli-Hz band just as in the equal-mass case. Uses
+    the fiducial Model-2 hardening with the correct unequal-mass companion scaling m_i m_j.
+    """
+    rho_c = model.rho_c
+    cs = cs_at(sound_speed_prescriptions(), 0.5 * cst.RSUN, "cs_gas")
+    T_obs = T_obs_yr * 365.25 * 86400.0
+
+    def hc_tracks(m1, m2):
+        a = np.logspace(np.log10(bbh.a_isco(m1, m2)), np.log10(5 * cst.RSUN), 800)
+        f, A = physics.gw_strain(m1, m2, a, distance)
+        dfda = np.gradient(f, a)
+
+        def hc(dadt):
+            n = np.minimum(f**2 / np.clip(np.abs(dfda * dadt), 1e-300, None), f * T_obs)
+            return A * np.sqrt(np.clip(n, 0.0, None))
+        dadt_tot, dadt_gw = dadt_model(m1, m2, a, rho_c, cs, model=2)
+        return f, hc(dadt_tot), hc(dadt_gw)
+
+    fig, ax = plt.subplots(figsize=(DCOL, 4.2))
+    fg = np.logspace(-4, 4, 2000)
+    for name in ("LISA", "DECIGO", "LVK"):
+        hn = np.sqrt(fg * det.DETECTORS[name](fg)) / det.SKY_AVG[name]
+        ax.loglog(fg, np.where(np.isfinite(hn), hn, np.nan), color=DETC[name], lw=1.3,
+                  alpha=0.9, label=name)
+    bcolors = ["#2166ac", "#178a4c", "#6a3d9a"]
+    for (m1n, m2n), col in zip(pairs, bcolors):
+        f, hg, hv = hc_tracks(m1n * cst.MSUN, m2n * cst.MSUN)
+        ax.loglog(f, hv, color=col, lw=1.0, ls=(0, (4, 2)), alpha=0.55)   # vacuum (each)
+        ax.loglog(f, hg, color=col, lw=2.3, label=fr"{m1n}+{m2n} M$_\odot$")
+    ax.loglog([], [], color="0.45", lw=1.0, ls=(0, (4, 2)), label="vacuum (each)")
+    ax.set_xlim(1e-4, 1e4); ax.set_ylim(1e-26, 2e-18)
+    ax.set_xlabel("frequency [Hz]"); ax.set_ylabel(r"characteristic strain $h_c$")
+    leg = ax.legend(fontsize=8.5, loc="lower right", ncol=2, framealpha=1)
+    leg.get_frame().set_edgecolor("none")
+    ax.text(0.025, 0.93, "unequal-mass BBHs in immortal core\n"
+            f"({distance/cst.MPC:.0f} Mpc, fiducial gas hardening)",
+            transform=ax.transAxes, fontsize=10, va="top")
+    fig.tight_layout(pad=0.4)
+    return fig
+
+
 # --------------------------------------------------------------------------- #
 # Queued Case B plots: a(t) trajectory and eccentricity-regime diagnostic
 # --------------------------------------------------------------------------- #

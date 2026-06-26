@@ -120,9 +120,10 @@ def gas_loss_rate_model(m1, m2, a, rho, cs, model=FIDUCIAL_MODEL):
         ri = a * mj / M       # orbital radius about the c.o.m. (Coulomb-log length scale)
         mach = vi / cs
         F_acc = physics.accretion_drag_force(rho, mi, cs, vi)
-        # KKSS08 companion-wake force (additive, sign preserved): F0 * I_{2,phi} < 0.
-        F0 = 4.0 * np.pi * rho * (cst.G * mi) ** 2 / vi**2
-        F_comp = F0 * kkss08_I2_phi(mach)
+        # KKSS08 companion-wake force on component i from the COMPANION's wake (density
+        # enhancement ~ m_j), so F_comp ~ G^2 m_i m_j / v_i^2 -- NOT m_i^2 (the two coincide
+        # only for equal masses). Sign preserved (I_{2,phi} < 0 => forward / anti-drag).
+        F_comp = 4.0 * np.pi * rho * cst.G**2 * mi * mj / vi**2 * kkss08_I2_phi(mach)
         if model == 0:                                   # independent self-wake (upper-drag baseline)
             F_df = physics.dynamical_friction_force(mi, vi, ri, cs, rho)
         elif model == 1:                                 # linear self + KKSS08 companion
