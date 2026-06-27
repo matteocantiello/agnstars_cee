@@ -529,13 +529,17 @@ def fig_unequal_mass_strain(model, pairs=((30, 10), (50, 10), (100, 10)),
     """Characteristic strain for *unequal-mass* BBHs hardening in the immortal core.
 
     Tests the \\citet{KKSS08} asymmetric-wake concern (Barry McKernan): for q=m2/m1<1 the
-    companion wake pushes the lighter BH *forward* (anti-drag) once m1/m2 exceeds
-    I_self/|I_2phi| (~2-3 at the transonic core Mach numbers), which can stall an unequal
-    pair while it is forming in the tenuous AGN disk. Here we show that for a *bound* pair
-    deep in the immortal the net binary torque still hardens: the heavier BH's self-drag
-    (~m1^2) dominates the lighter BH's forward companion wake (~m1 m2), so every track is
-    swept (suppressed) through the LISA/milli-Hz band just as in the equal-mass case. Uses
-    the fiducial Model-2 hardening with the correct unequal-mass companion scaling m_i m_j.
+    companion wake pushes the lighter BH *forward* (anti-drag), which in KKSS08's
+    independent-orbit picture can trap the lighter perturber ("dynamical boost", a barrier).
+    Using the literature-correct companion-wake prescription -- the wake amplitude/Mach are
+    set by the body that CREATES the wake (Sanchez-Salcedo & Chametla 2014; O'Neill+ 2024),
+    so the fast-moving light BH makes a *weak* wake (~1/v^2) that barely pushes the heavy BH
+    ("the [massive] is little influenced by the former", KKSS08) -- we find the *bound* pair
+    deep in the immortal still hardens for every mass ratio: the heavier BH's self-drag
+    dominates the net binary torque, so every track is swept (suppressed) through the
+    LISA/milli-Hz band as in the equal-mass case. The lighter BH's forward push is real but
+    cannot reverse a bound binary. (The KKSS08 barrier instead operates at the binary's
+    *formation* in the tenuous AGN disk, where M_gas ~ M_BBH and the pair is barely bound.)
     """
     rho_c = model.rho_c
     cs = cs_at(sound_speed_prescriptions(), 0.5 * cst.RSUN, "cs_gas")

@@ -116,14 +116,19 @@ def gas_loss_rate_model(m1, m2, a, rho, cs, model=FIDUCIAL_MODEL):
     v_rel = physics.v_kepler(m1, m2, a)
     L = np.zeros_like(a)
     for mi, mj in ((m1, m2), (m2, m1)):
-        vi = v_rel * mj / M
+        vi = v_rel * mj / M   # speed of component i about the c.o.m.
+        vj = v_rel * mi / M   # speed of the companion j (sets the wake it creates)
         ri = a * mj / M       # orbital radius about the c.o.m. (Coulomb-log length scale)
         mach = vi / cs
         F_acc = physics.accretion_drag_force(rho, mi, cs, vi)
-        # KKSS08 companion-wake force on component i from the COMPANION's wake (density
-        # enhancement ~ m_j), so F_comp ~ G^2 m_i m_j / v_i^2 -- NOT m_i^2 (the two coincide
-        # only for equal masses). Sign preserved (I_{2,phi} < 0 => forward / anti-drag).
-        F_comp = 4.0 * np.pi * rho * cst.G**2 * mi * mj / vi**2 * kkss08_I2_phi(mach)
+        # KKSS08 companion-wake force on component i from the COMPANION j's wake. The wake's
+        # amplitude and geometry are set by the body that CREATES it (j), so the Ostriker
+        # focusing factor uses the companion's velocity v_j and its Mach number m_j_mach=v_j/cs
+        # (Kim, Kim & Sanchez-Salcedo 2008; Sanchez-Salcedo & Chametla 2014; O'Neill+ 2024).
+        # F_comp ~ G^2 m_i m_j / v_j^2 * I_{2,phi}(v_j/cs); the force-feeler contributes m_i.
+        # (For equal masses v_i = v_j, so this reduces to the standard equal-mass expression
+        # and leaves all equal-mass results unchanged.) Sign preserved: I_{2,phi} < 0 => forward.
+        F_comp = 4.0 * np.pi * rho * cst.G**2 * mi * mj / vj**2 * kkss08_I2_phi(vj / cs)
         if model == 0:                                   # independent self-wake (upper-drag baseline)
             F_df = physics.dynamical_friction_force(mi, vi, ri, cs, rho)
         elif model == 1:                                 # linear self + KKSS08 companion
