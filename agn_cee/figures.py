@@ -36,6 +36,47 @@ def site_conditions(model):
     return out
 
 
+def band_sensitivity_fade(ax, name, m1, m2, C_hl, f0, f1, a_min, a_max, p_lo, p_hi,
+                          base_alpha=0.15, fade_dex=1.5):
+    """Detector-band shading that fades out below the detector's sensitivity.
+
+    The power panels carry a strain axis h = C_hl * P^(1/5); within the band
+    [f0, f1] (mapped to separations via f_GW(a)) the shading has full opacity
+    where h exceeds the detector's sky-averaged characteristic noise
+    h_n(f) = sqrt(f S_n(f)) / SKY_AVG (same convention as the Fig. 7 curves),
+    and fades linearly in log-strain to transparent over ``fade_dex`` decades
+    below it -- so the surviving color marks where emission in that band would
+    be individually detectable at the plotted distance.
+    """
+    from matplotlib.colors import LinearSegmentedColormap, to_rgb
+
+    RS = cst.RSUN
+    a_hi = physics.separation_from_gw_frequency(m1, m2, f1) / RS
+    a_lo = physics.separation_from_gw_frequency(m1, m2, f0) / RS
+    lo, hi = max(a_hi, a_min), min(a_lo, a_max)
+    if hi <= lo:
+        return
+    a_gr = np.logspace(np.log10(lo), np.log10(hi), 200)
+    p_gr = np.logspace(np.log10(p_lo), np.log10(p_hi), 160)
+    f_gr = physics.gw_frequency(m1, m2, a_gr * RS)
+    with np.errstate(all="ignore"):
+        hn = np.sqrt(f_gr * det.DETECTORS[name](f_gr)) / det.SKY_AVG[name]
+    # smooth spectral lines in measured ASDs (LVK) for a clean schematic boundary
+    from scipy.ndimage import median_filter
+    with np.errstate(all="ignore"):
+        hn = 10.0 ** median_filter(np.log10(hn), size=15, mode="nearest")
+    H = C_hl * p_gr[:, None] ** 0.2
+    with np.errstate(all="ignore"):
+        ramp = 1.0 + (np.log10(H) - np.log10(hn[None, :])) / fade_dex
+    A = np.clip(ramp, 0.0, 1.0)
+    A[~np.isfinite(A)] = 0.0
+    r, g, b = to_rgb(DETC[name])
+    cmap = LinearSegmentedColormap.from_list(
+        f"fade_{name}", [(r, g, b, 0.0), (r, g, b, 1.0)])
+    ax.pcolormesh(a_gr, p_gr, A * base_alpha, cmap=cmap, vmin=0.0, vmax=1.0,
+                  shading="auto", zorder=0.4, rasterized=True)
+
+
 # --------------------------------------------------------------------------- #
 # Figure 1 : structure
 # --------------------------------------------------------------------------- #
@@ -132,25 +173,28 @@ def fig_power(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, d_obs=100 * cst.MPC):
 
     ax.text(0.8,0.88,r"$10+10\,$M$_\odot$",transform=ax.transAxes,fontsize=12) 
 
-    # detector frequency bands, mapped onto the separation axis (same style as Fig. 7)
-    detband = [("LISA", 1e-4, 1e-1), ("DECIGO", 1e-2, 1e1), ("LVK", 1e1, 1e3)]
-    trans = blended_transform_factory(ax.transData, ax.transAxes)
-    for j, (name, f0, f1) in enumerate(detband):
-        a_hi = physics.separation_from_gw_frequency(m1, m2, f1) / RS  # high f -> small a
-        a_lo = physics.separation_from_gw_frequency(m1, m2, f0) / RS
-        ax.axvspan(a_hi, a_lo, color=DETC[name], alpha=0.06)
-        y = 0.83 + 0.04 * j               # LISA lowest (low-curve side), LVK highest
-        ax.plot([a_hi, a_lo], [y, y], transform=trans, color=DETC[name], lw=5.0,
-                solid_capstyle="butt", clip_on=False)
-        ax.text(np.sqrt(a_hi * a_lo), y + 0.008, name, transform=trans, ha="center",
-                va="bottom", fontsize=7.5, color=DETC[name], fontweight="bold")
-
     # GW strain h and GW power L_GW are both exact power laws of separation a
     # (h ~ a^-1, L_GW ~ a^-5), so h = C * L_GW^(1/5). Rescaling the right axis by
     # this relation (one strain decade per five power decades) lets the single
     # blue GW-power curve also be read as GW strain -- no separate strain line.
     C_hl = np.median(h / P_gw ** 0.2)
     P_LO, P_HI = 1e27, 1e64
+
+    # detector frequency bands, mapped onto the separation axis; shading fades
+    # to transparent where the strain (right axis) drops below each detector's
+    # sensitivity, so the surviving color marks detectable emission.
+    detband = [("LISA", 1e-4, 1e-1), ("DECIGO", 1e-2, 1e1), ("LVK", 1e1, 1e3)]
+    trans = blended_transform_factory(ax.transData, ax.transAxes)
+    for j, (name, f0, f1) in enumerate(detband):
+        a_hi = physics.separation_from_gw_frequency(m1, m2, f1) / RS  # high f -> small a
+        a_lo = physics.separation_from_gw_frequency(m1, m2, f0) / RS
+        band_sensitivity_fade(ax, name, m1, m2, C_hl, f0, f1,
+                              r_merger / RS, a.max() / RS, P_LO, P_HI)
+        y = 0.83 + 0.04 * j               # LISA lowest (low-curve side), LVK highest
+        ax.plot([a_hi, a_lo], [y, y], transform=trans, color=DETC[name], lw=5.0,
+                solid_capstyle="butt", clip_on=False)
+        ax.text(np.sqrt(a_hi * a_lo), y + 0.008, name, transform=trans, ha="center",
+                va="bottom", fontsize=7.5, color=DETC[name], fontweight="bold")
     ax3 = ax.twinx()
     ax3.set_yscale("log")
     ax3.set_ylim(C_hl * P_LO ** 0.2, C_hl * P_HI ** 0.2)

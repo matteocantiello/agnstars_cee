@@ -441,13 +441,16 @@ def fig_power_caseB(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN, d_obs=100 * cst.M
     ax2 = ax.twiny(); ax2.set_xscale("log"); ax2.set_xlim(a.min() / RS, a.max() / RS)
     ax2.set_xticks(a_for_f); ax2.set_xticklabels([r"$10^{%.0f}$" % np.log10(ff) for ff in f_sel])
     ax2.set_xlabel(r"$f_{\rm GW}$ [Hz]", labelpad=3)
+    from .figures import band_sensitivity_fade
     trans = blended_transform_factory(ax.transData, ax.transAxes)
     for name, f0, f1 in [("LISA", 1e-4, 1e-1), ("DECIGO", 1e-2, 1e1), ("LVK", 1e1, 1e3)]:
         a_hi = physics.separation_from_gw_frequency(m1, m2, f1) / RS
         a_lo = physics.separation_from_gw_frequency(m1, m2, f0) / RS
         lo, hi = max(a_hi, a.min() / RS), min(a_lo, a.max() / RS)
         if hi > lo:
-            ax.axvspan(lo, hi, color=DETC[name], alpha=0.06)
+            # shading fades below each detector's sensitivity (strain axis)
+            band_sensitivity_fade(ax, name, m1, m2, C_hl, f0, f1,
+                                  a.min() / RS, a.max() / RS, 1e38, 1e56)
             ax.text(np.sqrt(lo * hi), 0.95, name, transform=trans, ha="center",
                     va="top", fontsize=7.5, color=DETC[name], fontweight="bold")
 
