@@ -27,12 +27,16 @@ def migration_time(M_star=1e2 * cst.MSUN, r0_over_rg=1e4, N=3.0, h=1e-3,
     """Type I migration time [s] for an embedded mass (draft eq.; Tanaka+2004).
 
     tau ~ 0.5 Myr (N/3)^-1 (r0/1e4 rg)^-1/2 (M/1e2 Msun)^-1 (h/1e-3)^2
-                  (Sigma0/1e2)^-1 (M_SMBH/1e8 Msun)^3/2.
+                  (Sigma0/1e2)^-1 (M_SMBH/1e8 Msun).
     Strongly sensitive to the disk aspect ratio h (tau ~ h^2).
+
+    The M_SMBH power is linear (not 3/2) because r0 is held fixed in units of
+    r_g ~ M_SMBH: the Tanaka+2004 tau ~ M^2/(m Sigma r0^2 Omega) reduces to
+    tau ~ M (r0/r_g)^-1/2 h^2/(m Sigma) once r0 = x r_g is substituted.
     """
     return (0.5 * MYR * (N / 3.0) ** -1 * (r0_over_rg / 1e4) ** -0.5
             * (M_star / (1e2 * cst.MSUN)) ** -1 * (h / 1e-3) ** 2
-            * (Sigma0 / 1e2) ** -1 * M8 ** 1.5)
+            * (Sigma0 / 1e2) ** -1 * M8)
 
 
 def encounter_rate(N_bh_interior=10.0, **kw):

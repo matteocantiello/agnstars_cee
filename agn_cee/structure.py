@@ -156,6 +156,10 @@ def build_model(profile_path, cs_agn=CS_AGN_DEFAULT, rho_agn=RHO_AGN_DEFAULT,
 
     # --- accretion stream (analytic), ordered shock -> Bondi ---
     r_str = np.linspace(r_shock, r_bondi, n_stream)
+    # nudge the first point off r_shock so the concatenated grid has no duplicated
+    # abscissa (interp1d behaviour at duplicate knots is not guaranteed across
+    # scipy versions); the shift is one part in 1e12, physically inert
+    r_str[0] = r_shock * (1.0 + 1e-12)
     x = r_str / cst.RSUN
     rho_str = x ** (-1.5)
     T_str = x ** (-0.375)
@@ -175,8 +179,10 @@ def build_model(profile_path, cs_agn=CS_AGN_DEFAULT, rho_agn=RHO_AGN_DEFAULT,
     cst_str = np.sqrt(g1_str * P_tot_str / rho_str)
     csi_str = np.sqrt(P_tot_str / rho_str)
     # stream enclosed mass: M_star plus the cumulative (analytic) stream shell mass
+    # (the first stream point sits at the shock, where no stream mass has
+    # accumulated yet, hence dr = 0 there)
     dr_str = np.diff(r_str)
-    dr_str = np.insert(dr_str, 0, dr_str[0])
+    dr_str = np.insert(dr_str, 0, 0.0)
     m_enc_str = m_star + np.cumsum(4.0 * np.pi * rho_str * r_str**2 * dr_str)
 
     # --- concatenate (centre -> Bondi) ---

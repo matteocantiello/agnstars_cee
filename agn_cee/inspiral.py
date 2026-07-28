@@ -1,4 +1,4 @@
-"""Single compact-object inspiral into an immortal star (Case A).
+"""Single compact-object inspiral into an immortal star.
 
 A compact object (CO) of mass ``m_co`` spirals through the star on a
 quasi-circular orbit at radius ``r``, orbiting the enclosed mass
@@ -78,8 +78,9 @@ def spiral_in_time(model, m_co, r0, r_final=None, m_central=0.0, C_d=1.0,
 
     Returns
     -------
-    dict with r (centre->out), t_to_r0 (time to fall from r0 down to r),
-    t_total, and the channel luminosities along the way.
+    dict with r (centre->out), t_to_r0 (the remaining spiral-in time from r down
+    to r_final: 0 at r_final, t_total at r0 -- so time since capture is
+    t_total - t_to_r0), t_total, and the channel luminosities along the way.
     """
     if r_final is None:
         # radius where the enclosed *stellar* mass equals the CO mass

@@ -94,6 +94,43 @@ def test_dynamical_friction_along_star():
     assert np.any(L > 0)
 
 
+def test_coulomb_logarithm_subsonic_matches_ostriker():
+    # The KK07 subsonic fit must track the exact Ostriker (1999) result
+    # I = 0.5 ln[(1+M)/(1-M)] - M in the mid-subsonic range (the fit is
+    # intentionally finite at M -> 1, so it deviates there).
+    mach = np.array([0.4, 0.5, 0.6, 0.7, 0.8])
+    exact = 0.5 * np.log((1 + mach) / (1 - mach)) - mach
+    fit = physics.coulomb_logarithm(mach, a=cst.RSUN, rmin=1e-3 * cst.RSUN)
+    assert np.allclose(fit, exact, rtol=0.05), (fit, exact)
+    # sharp regression pin at M=0.8: the published KK07 coefficient is 1.4703
+    # (a 1.473 transcription would shift this value by ~0.7%)
+    assert approx(float(physics.coulomb_logarithm(0.8, cst.RSUN, 1e-3 * cst.RSUN)),
+                  0.29854, rtol=1e-3)
+
+
+def test_eddington_luminosity_value():
+    # L_Edd(1 Msun, kappa=0.34) = 4 pi G M c / kappa ~ 1.47e38 erg/s.
+    L = physics.eddington_luminosity(cst.MSUN)
+    assert 1.44e38 < L < 1.50e38, L
+
+
+def test_bhl_rate_hl_limit_value():
+    # HL limit (v >> cs): Mdot = 4 pi G^2 rho m^2 / v^3. For rho = 1e-9 g/cm^3,
+    # m = 10 Msun, v = 1000 km/s this evaluates to 2.21e22 g/s.
+    md = physics.bhl_accretion_rate(1e-9, 10 * cst.MSUN, 0.0, 1e8)
+    assert approx(md, 2.215e22, rtol=1e-2), md
+
+
+def test_gw_strain_value_bns():
+    # Face-on strain of a 1.4+1.4 Msun binary at 100 Mpc, f_gw = 100 Hz:
+    # h = (4/d)(G Mc/c^2)(pi f G Mc/c^3)^(2/3) ~ 3.56e-23 (optimal orientation).
+    m = 1.4 * cst.MSUN
+    a = physics.separation_from_gw_frequency(m, m, 100.0)
+    f, h = physics.gw_strain(m, m, a, 100 * cst.MPC)
+    assert approx(f, 100.0, rtol=1e-9)
+    assert approx(h, 3.56e-23, rtol=2e-2), h
+
+
 def test_structure_model_basic():
     model = structure.build_model(structure.DEFAULT_PROFILE)
     # mass and radius are physical
@@ -175,6 +212,23 @@ def test_snr_inverse_distance():
     assert approx(s1 / s2, 2.0, rtol=1e-3)
 
 
+def test_snr_callable_detector_guard():
+    # Passing S_n as a callable must not silently drop the sky-average factor:
+    # it requires an explicit sky_avg, and with the right factor it matches the
+    # string-keyed path.
+    from agn_cee import detectors
+    args = (10 * cst.MSUN, 10 * cst.MSUN, 1.0, 1e8, 100 * cst.MPC)
+    Sn_lvk = detectors.DETECTORS["LVK"]
+    try:
+        obs.snr(*args, Sn_lvk, gas=False)
+        raise AssertionError("expected ValueError for callable detector without sky_avg")
+    except ValueError:
+        pass
+    s_named = obs.snr(*args, "LVK", gas=False)
+    s_callable = obs.snr(*args, Sn_lvk, gas=False, sky_avg=detectors.SKY_AVG["LVK"])
+    assert approx(s_named, s_callable, rtol=1e-9)
+
+
 def test_gas_suppresses_lisa_snr():
     # Inside the dense core the LISA-band SNR collapses relative to vacuum,
     # while the LVK SNR is essentially unchanged (merger is GW-dominated).
@@ -208,8 +262,10 @@ def test_detection_rate_volume_cap():
 
 def test_review_gamma1_limits():
     from agn_cee import review
-    assert approx(review._gamma1_mixture(1.0), 5.0 / 3.0)
-    assert approx(review._gamma1_mixture(0.0), 4.0 / 3.0)
+    assert approx(physics.gamma1_mixture(1.0), 5.0 / 3.0)
+    assert approx(physics.gamma1_mixture(0.0), 4.0 / 3.0)
+    # review must reuse the canonical implementation, not duplicate it
+    assert review._gamma1_mixture is physics.gamma1_mixture
 
 
 def test_review_soundspeed_ordering():

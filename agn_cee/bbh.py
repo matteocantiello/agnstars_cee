@@ -215,8 +215,8 @@ def merger_time(m1, m2, a0, rho, cs, a_end=None, model=FIDUCIAL_MODEL, n=6000):
     h = hardening_rates(m1, m2, a, rho, cs, model=model)
     dtda_gas = 1.0 / np.abs(h["dadt_tot"])     # dt/da
     dtda_vac = 1.0 / np.abs(h["dadt_gw"])
-    t_gas = np.trapz(dtda_gas, a)
-    t_vac = np.trapz(dtda_vac, a)
+    t_gas = np.trapezoid(dtda_gas, a)
+    t_vac = np.trapezoid(dtda_vac, a)
     return dict(a0=a0, t_gas=t_gas, t_vacuum=t_vac, ratio=t_gas / t_vac,
                 t_peters=physics.t_merge_gw(m1, m2, a0))
 
@@ -227,7 +227,7 @@ def merger_time_model(m1, m2, a0, rho, cs, model=FIDUCIAL_MODEL, a_end=None, n=4
         a_end = a_isco(m1, m2)
     a = np.logspace(np.log10(a_end), np.log10(a0), n)
     dadt_tot, _ = dadt_model(m1, m2, a, rho, cs, model)
-    return float(np.trapz(1.0 / np.abs(dadt_tot), a))
+    return float(np.trapezoid(1.0 / np.abs(dadt_tot), a))
 
 
 def dephasing(m1, m2, a0, rho, cs, a_end=None, model=FIDUCIAL_MODEL, n=6000):

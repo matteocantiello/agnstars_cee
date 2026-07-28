@@ -4,8 +4,8 @@ The sky-averaged matched-filter SNR is
 
     SNR^2 = 4 \\int |h~(f)|^2 / S_n(f) df = \\int A(f)^2 / (f_dot S_n(f)) df,
 
-where A(f) is the angle-averaged strain amplitude (the same amplitude returned by
-``physics.gw_strain``) and f_dot is the *actual* chirp rate. Changing variables
+where A(f) is the face-on (optimal) strain amplitude (the same amplitude returned
+by ``physics.gw_strain``) and f_dot is the *actual* chirp rate. Changing variables
 from f to the binary separation a (f_dot = |df/da| |da/dt|) gives the compact form
 
     SNR^2 = \\int A(a)^2 / (|da/dt| S_n(f(a))) da,
@@ -40,20 +40,31 @@ def chirp(m1, m2, rho, cs, distance, gas=True, f_start=1e-5, a_end=None, n=8000)
     return dict(a=a, f=f, adot=adot, A=A)
 
 
-def snr(m1, m2, rho, cs, distance, detector, gas=True, **kw):
+def snr(m1, m2, rho, cs, distance, detector, gas=True, sky_avg=None, **kw):
     """Sky-averaged matched-filter SNR in a given detector (name or S_n callable).
 
     A(f) is the face-on (optimal) amplitude; the per-detector ``SKY_AVG`` factor converts the
     optimally-oriented SNR to the sky/inclination/polarization-averaged value (1 for LISA/DECIGO
     whose sensitivities already include the averaged response; 2/5 for the raw LVK ASD).
+
+    If ``detector`` is a callable S_n(f) rather than a name, no averaging factor can be
+    looked up, so ``sky_avg`` must be given explicitly (the appropriate factor, or 1.0
+    for an already-averaged sensitivity).
     """
-    Sn_func = detectors.DETECTORS[detector] if isinstance(detector, str) else detector
-    fac = detectors.SKY_AVG.get(detector, 1.0) if isinstance(detector, str) else 1.0
+    if isinstance(detector, str):
+        Sn_func = detectors.DETECTORS[detector]
+        fac = detectors.SKY_AVG.get(detector, 1.0) if sky_avg is None else sky_avg
+    else:
+        if sky_avg is None:
+            raise ValueError(
+                "detector given as a callable: pass sky_avg explicitly "
+                "(e.g. sky_avg=1.0 for an already sky-averaged S_n)")
+        Sn_func, fac = detector, sky_avg
     c = chirp(m1, m2, rho, cs, distance, gas=gas, **kw)
     Sn = Sn_func(c["f"])
     integrand = c["A"] ** 2 / (c["adot"] * Sn)        # 1/cm; ->0 outside the band
     integrand = np.where(np.isfinite(integrand), integrand, 0.0)
-    return fac * np.sqrt(np.trapz(integrand, c["a"]))
+    return fac * np.sqrt(np.trapezoid(integrand, c["a"]))
 
 
 def time_in_band(m1, m2, rho, cs, band, gas=True, n=8000):
@@ -64,7 +75,7 @@ def time_in_band(m1, m2, rho, cs, band, gas=True, n=8000):
     a = np.logspace(np.log10(a_lo), np.log10(a_hi), n)
     h = bbh.hardening_rates(m1, m2, a, rho, cs)
     adot = np.abs(h["dadt_tot"] if gas else h["dadt_gw"])
-    return float(np.trapz(1.0 / adot, a))                       # dt = da/|da/dt|
+    return float(np.trapezoid(1.0 / adot, a))                   # dt = da/|da/dt|
 
 
 def horizon_distance(m1, m2, rho, cs, detector, gas=True, snr_thresh=8.0,

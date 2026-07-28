@@ -44,12 +44,8 @@ A_RAD = 4.0 * cst.SIGMA_SB / cst.C        # radiation constant a = 4 sigma/c [er
 # --------------------------------------------------------------------------- #
 # R1 : sound-speed prescriptions from the MESA interior
 # --------------------------------------------------------------------------- #
-def _gamma1_mixture(beta):
-    """Chandrasekhar (1939) Gamma_1 for an ideal-gas + radiation mixture (gas gamma=5/3).
-
-    beta = P_gas/P_tot. Limits: beta->1 gives 5/3, beta->0 gives 4/3.
-    """
-    return (32.0 - 24.0 * beta - 3.0 * beta**2) / (24.0 - 21.0 * beta)
+# single source of truth lives in physics.py; kept under the old name for callers
+_gamma1_mixture = physics.gamma1_mixture
 
 
 def sound_speed_prescriptions(profile_path=structure.DEFAULT_PROFILE):

@@ -91,9 +91,14 @@ def separation_from_gw_frequency(m1, m2, f_gw):
 
 
 def gw_strain(m1, m2, a, d_obs):
-    """Sky/inclination-averaged GW strain amplitude h of a circular binary.
+    """Face-on (optimally oriented) GW strain amplitude h of a circular binary.
 
     Returns (f_gw, h). ``d_obs`` is the luminosity distance [cm].
+
+    This is the optimal amplitude, NOT sky/inclination-averaged: the rms average
+    over sky position, inclination and polarization is sqrt(4/25) = 2/5 of this
+    value. ``observability.snr`` applies that factor per detector (see
+    ``detectors.SKY_AVG``); do not apply it twice.
     """
     mc = chirp_mass(m1, m2)
     f_gw = gw_frequency(m1, m2, a)
@@ -165,7 +170,7 @@ def coulomb_logarithm(mach, a, rmin):
     Follows the piecewise fit collected by Schneider et al. 2024 / Bonner et
     al. 2024 (built on Kim 2010 + Kim & Kim 2007 + Ostriker 1999):
 
-      * subsonic  (M < 1):    0.7706 ln[(1+M)/(1.0004-0.9185 M)] - 1.473 M
+      * subsonic  (M < 1):    0.7706 ln[(1+M)/(1.0004-0.9185 M)] - 1.4703 M
       * transonic (1 <= M < 4.4): ln[330 (a/rmin) (M-0.71)^5.72 / M^9.58]
       * supersonic (M >= 4.4): ln[(a/rmin)/(0.11 M + 1.65)]
     """
@@ -177,7 +182,7 @@ def coulomb_logarithm(mach, a, rmin):
     with np.errstate(divide="ignore", invalid="ignore"):
         m1 = mach < 1.0
         out[m1] = (0.7706 * np.log((1.0 + mach[m1]) / (1.0004 - 0.9185 * mach[m1]))
-                   - 1.473 * mach[m1])
+                   - 1.4703 * mach[m1])
         m2 = (mach >= 1.0) & (mach < 4.4)
         out[m2] = np.log(330.0 * (a[m2] / rmin[m2])
                          * (mach[m2] - 0.71) ** 5.72 / mach[m2] ** 9.58)
@@ -214,6 +219,9 @@ def dynamical_friction_force(m_p, v_rel, a, cs, rho, rmin=None, C_d=1.0):
             * rho * (cst.G * m_p) ** 2 / v_rel**2
         linear = C_d * I * 4.0 * np.pi * rho * (cst.G * m_p) ** 2 / v_rel**2
 
+    # Kim (2010) states the nonlinear switch as eta_B > 0.1 only; we additionally
+    # require M > 1.01 because f_rho/sqrt(eta_B) -> 0 spuriously as M -> 1+, where
+    # the linear (transonic Coulomb-log) branch is the sensible limit.
     condition = (eta_b > 0.1) & (mach > 1.01)
     return np.where(condition, nonlinear, linear)
 
