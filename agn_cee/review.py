@@ -681,7 +681,7 @@ def fig_true_trajectories(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN):
     1e-3 Rsun, then plunges to the ISCO. NOTE: this is a journey through the real stellar
     profile, NOT the fiducial internal-binary hardening ladder (Model 2) used for the
     quantitative merger times and Fig. powerB -- it is shown only to visualise where the
-    orbits accumulate. The pink disk marks R_BHL/r > 1 (r < ~0.6 Rsun), the 3D-breakdown
+    orbits accumulate. The pink disk marks R_BHL/r > 1 (r < ~0.51 Rsun), the 3D-breakdown
     region. Colour is the time remaining to the endpoint (merger in b, the core in a),
     log-scaled and floored at 1 s, so the timescale collapse from ~0.1 yr at the surface
     to seconds at merger is visible.

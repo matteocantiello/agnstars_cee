@@ -63,8 +63,18 @@ directory).
 - **Run the tests:**
 
   ```bash
-  pytest tests/                       # 24 tests (physics + SNR calibration)
+  pytest tests/                       # 29 tests (physics + SNR calibration)
   ```
+
+- **Cross-check against the stratified-wake drag of Gagnier (2026):**
+
+  ```bash
+  git clone https://github.com/dgagnier/DF_stratified
+  python scripts/gagnier_stratified_check.py --dfstrat ./DF_stratified
+  ```
+
+  reproduces the comparison quoted in the paper (the stratified azimuthal drag exceeds the local
+  Kim & Kim 2007 coefficient by a factor ~1–3 across the envelope).
 
 ## Figure map
 
@@ -74,14 +84,19 @@ number in the compiled paper.
 | Paper | File | Function |
 |-------|------|----------|
 | Fig. 1 | `fig1_structure.pdf` | `figures.fig_structure` |
-| Fig. 2 | `fig2_caseA_powers.pdf` | `figures.fig_power` |
-| Fig. 3 | `fig3_caseA_inspiral.pdf` | `figures.fig_inspiral` |
-| Fig. 4 | `fig9_spiral_trajectories.pdf` | `review.fig_spiral_trajectories` |
+| Fig. 2 | `fig3_caseA_inspiral.pdf` | `figures.fig_inspiral` |
+| Fig. 3 | `fig9_spiral_trajectories.pdf` | `review.fig_true_trajectories` |
+| Fig. 4 | `fig2_caseA_powers.pdf` | `figures.fig_power` |
 | Fig. 5 | `fig4_caseB_powers.pdf` | `review.fig_power_caseB` |
 | Fig. 6 | `fig8_energy_deposition.pdf` | `review.fig_energy_deposition` |
 | Fig. 7 | `fig6_dephasing.pdf` | `figures.fig_dephasing` |
 | Fig. 8 | `fig7_characteristic_strain.pdf` | `review.fig_characteristic_strain` |
 | Fig. 9 (App. B) | `fig5_hardening_ladder.pdf` | `review.fig_hardening_ladder` |
+
+Two additional figures (`fig_orbit_accumulation.pdf`, `fig_unequal_mass_strain.pdf`) are produced by
+`review` functions for supplementary checks (orbit-accumulation view of the spiral-in; unequal-mass
+characteristic strain) and are not included in the manuscript; `true_inspiral_trajectories.ipynb`
+documents the trajectory-figure development.
 
 ## Data
 
@@ -105,8 +120,8 @@ number in the compiled paper.
 | `detectors.py` | LISA / DECIGO / LVK noise curves and sky-averaging factors |
 | `observability.py` | matched-filter SNR, characteristic strain, horizon distance |
 | `rates.py` | migration time, encounter rate, volumetric merger rate |
-| `figures.py` | Fig. 1–3, 7 |
-| `review.py` | Case B / GW figures (Figs. 4–6, 8, 9) and the robustness diagnostics (sound-speed prescriptions, hardening model ladder, energy deposition, measurable dephasing) |
+| `figures.py` | Figs. 1, 2, 4, 7 |
+| `review.py` | Figs. 3, 5, 6, 8, 9 and the robustness diagnostics (sound-speed prescriptions, hardening model ladder, energy deposition, measurable dephasing) |
 | `plotstyle.py` | shared Matplotlib style and color palette |
 
 ## Citation
