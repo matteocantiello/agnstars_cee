@@ -317,9 +317,9 @@ def fig_energy_deposition(model, m1=10 * cst.MSUN, m2=10 * cst.MSUN):
     fig, ax = plt.subplots(figsize=(COL, 3.0))
     ax.loglog(e["a"] / cst.RSUN, e["E_gas"], color=C[6], lw=2.0,
               label=r"$E_{\rm gas}(<a)$ deposited")
-    ax.axhline(be["omega"], color=C[3], ls="--", lw=1.2, label=r"$|\Omega|$ (gravitational)")
+    ax.axhline(be["omega"], color=C[3], ls="--", lw=1.2, label=r"$|E_{\rm grav}|$ (gravitational)")
     ax.axhline(be["net_binding"], color=C[0], ls="-.", lw=1.2,
-               label=r"net binding ($|\Omega|-E_{\rm int}$)")
+               label=r"net binding ($|E_{\rm grav}|-E_{\rm int}$)")
     ax.set_xlabel(r"BBH separation $a$ [R$_\odot$]")
     ax.set_ylabel("energy [erg]")
     ax.set_ylim(1e49, 1e54)
