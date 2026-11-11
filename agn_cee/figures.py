@@ -1,4 +1,4 @@
-"""Figure builders for the paper / notebook.
+"""Figure builders for paper Figs. 1, 2, 4 and 7 (the rest are in ``review``).
 
 Each ``fig_*`` returns a publication-styled matplotlib Figure (no on-figure
 titles -- descriptions belong in the LaTeX captions). The physics lives in the

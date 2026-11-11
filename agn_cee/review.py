@@ -1,18 +1,24 @@
-"""Robustness checks and diagnostics added in response to the first technical review.
+"""Figure builders for paper Figs. 3, 5, 6, 8 and 9, and robustness checks.
 
-Deliberately kept in a separate module (and used only from the appended notebook
-section) so the whole review pass can be kept or discarded without touching the
-core modules. Addresses:
+Figures
+  fig_true_trajectories      Fig. 3  real spiral-in paths (single BH; BH onto a central BH)
+  fig_power_caseB            Fig. 5  gas vs GW power for the binary's internal orbit
+  fig_energy_deposition      Fig. 6  energy the hardening binary dumps into the star
+  fig_characteristic_strain  Fig. 8  signal strength vs LISA / DECIGO / LVK noise
+  fig_hardening_ladder       Fig. 9  the six gas-drag prescriptions (Appendix B)
+  (fig_soundspeed, fig_bbh_validity, fig_unequal_mass_strain, ... : supplementary)
 
-  R1  sound-speed prescription (gas-only vs full adiabatic vs isothermal-total)
-  R3  BBH component-wise validity (gravitational-focusing radius vs binary scale)
-  R4  energy deposited into the star by gas hardening vs binding energy
-  R5  measurable dephasing after removing the t_c / phi_c degeneracies
-  --  total binding energy including internal energy (radiation-dominated star)
-  --  MESA mass-column check
-  rate disk aspect-ratio self-consistency (tau_mig ~ h^2)
+Checks
+  sound_speed_prescriptions  gas-only vs radiation-inclusive sound speed in the core
+  component_focusing         where the "two independent point masses" picture fails
+  gas_energy_deposited       cumulative energy delivered to the gas by the binary
+  measurable_dephasing       dephasing left after removing merger time and phase
+  binding_energy_components  |E_grav|, E_int and the net binding energy E_*
+  mass_profile_check         MESA mass column vs integrating 4 pi r^2 rho dr
+  encounter_rate_vs_h        how the encounter rate depends on the disk thickness h
 
-All CGS.
+The section labels R1, R3, R4, R5 below refer to the referee-style review these
+checks were first written for. All quantities are CGS.
 """
 
 import numpy as np
@@ -170,7 +176,7 @@ def binding_energy_components(profile_path=structure.DEFAULT_PROFILE):
     reconstruction). Internal energy density u = (3/2) P_gas + 3 P_rad (ideal gas +
     radiation). The net energy required to unbind a shell to infinity is reduced by its
     internal energy, so for a radiation-pressure-dominated (near n=3) star the net
-    binding energy can be far below |Omega|.
+    binding energy can be far below |E_grav|.
     """
     p = structure.load_mesa_profile(profile_path)
     r = (10.0 ** p.logR)[::-1] * cst.RSUN
@@ -187,7 +193,7 @@ def binding_energy_components(profile_path=structure.DEFAULT_PROFILE):
     inner = M_col > 1e-3 * M_col[-1]
     rel_mass_err = float(np.max(np.abs(M_rec[inner] - M_col[inner]) / M_col[inner]))
 
-    # gravitational binding |Omega| = int G M(r)/r dm  (>0)
+    # gravitational binding |E_grav| = int G M(r)/r dm  (>0)
     omega = float(np.sum(cst.G * M_col / np.maximum(r, 1.0) * dm))
     # internal energy E_int = int (u/rho) dm,  u = 3/2 P_gas + 3 P_rad
     P_rad = A_RAD * T**4 / 3.0

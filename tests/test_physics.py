@@ -244,8 +244,8 @@ def test_gas_suppresses_lisa_snr():
     assert approx(lvk_gas, lvk_vac, rtol=0.05)  # unaffected in LVK
 
 
-def test_volumetric_rate_matches_draft():
-    # The draft's fiducial chain gives R ~ 8 Gpc^-3 yr^-1 for n_BBH = 20/AGN/Myr.
+def test_volumetric_rate_matches_paper():
+    # The paper's fiducial chain gives R ~ 8 Gpc^-3 yr^-1 for n_BBH = 20/AGN/Myr.
     from agn_cee import rates
     assert approx(rates.volumetric_rate(20.0), 8.0, rtol=1e-6)
     assert approx(rates.migration_time() / rates.MYR, 0.5, rtol=1e-6)
@@ -278,11 +278,11 @@ def test_review_soundspeed_ordering():
 
 
 def test_review_net_binding_energy():
-    # Net binding (grav - internal) is positive (bound) but well below |Omega|.
+    # Net binding (grav - internal) is positive (bound) but well below |E_grav|.
     from agn_cee import review
     be = review.binding_energy_components()
     assert 0 < be["net_binding"] < be["omega"]
-    assert 0.5 < be["ratio_int_over_grav"] < 1.0   # radiation-dominated -> E_int ~ |Omega|
+    assert 0.5 < be["ratio_int_over_grav"] < 1.0   # radiation-dominated -> E_int ~ |E_grav|
 
 
 def test_review_component_focusing_supersonic():
@@ -331,3 +331,14 @@ def _run_all():
 
 if __name__ == "__main__":
     sys.exit(1 if _run_all() else 0)
+
+
+def test_fallback_mesa_reader_parses_header():
+    # Without mesa_reader installed (it is not in requirements.txt), the built-in reader
+    # must still expose the header values the notebook uses (star_mdot, photosphere_L).
+    from agn_cee import structure
+    p = structure._MesaProfileFallback(structure.DEFAULT_PROFILE)
+    assert abs(p.star_mass - 773.3) < 0.1           # header: total mass [Msun]
+    assert 0.0 < p.star_mdot < 1.0                  # header: accretion rate [Msun/yr]
+    assert p.photosphere_L > 1e7                     # header: luminosity [Lsun]
+    assert abs(p.mass[0] - p.star_mass) < 1e-6       # zone table agrees with header

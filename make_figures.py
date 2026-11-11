@@ -36,7 +36,7 @@ def main():
     for fname, builder, label in FIGS:
         fig = builder(model)
         path = os.path.join(OUT, fname)
-        fig.savefig(path)
+        fig.savefig(path, metadata={"CreationDate": None})   # no timestamp: reruns are byte-stable
         figures.plt.close(fig)
         print("  %-16s -> %s" % (label, path))
 

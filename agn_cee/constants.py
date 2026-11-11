@@ -1,9 +1,12 @@
 """Physical constants in CGS units.
 
-Ported from the original ``Constants.py`` (which printed a banner on import and
-exposed the values as instance attributes of a ``Constants`` class). Here they
-are plain module-level constants so callers can simply do ``from agn_cee import
-constants as cst`` and use ``cst.G`` etc. The original attribute names are kept.
+Use them as plain module attributes::
+
+    from agn_cee import constants as c
+    c.G, c.MSUN, c.RSUN, c.C, c.YR
+
+The ``Constants`` class at the bottom offers the same values as lower-case
+attributes, for compatibility with older scripts.
 """
 
 # --- Fundamental / astronomical constants (CGS) ---
@@ -30,9 +33,8 @@ RGAS = 8.3145e7        # gas constant [erg K^-1 mol^-1]
 class Constants:
     """Backwards-compatible shim: exposes the constants as attributes.
 
-    The legacy notebooks do ``from Constants import Constants; c = Constants()``
-    and then use ``c.G``, ``c.msun`` (lower case). This class reproduces that
-    interface (without the print side effect) so old code keeps working.
+    Older scripts used ``c = Constants()`` and then ``c.G``, ``c.msun`` (lower
+    case). This class reproduces that interface so such code keeps working.
     """
 
     def __init__(self):

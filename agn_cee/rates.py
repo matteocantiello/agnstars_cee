@@ -1,6 +1,6 @@
 """Event-rate estimates for immortal-channel BBH mergers.
 
-Implements the order-of-magnitude chain of the draft (Section "Rates"), kept
+Implements the order-of-magnitude chain of paper Sec. 4 ("Rates"), kept
 transparent and adjustable, and combines the volumetric rate with the detector
 horizons from ``observability`` to get expected detection rates.
 
@@ -24,7 +24,7 @@ GPC = 1e3 * cst.MPC
 
 def migration_time(M_star=1e2 * cst.MSUN, r0_over_rg=1e4, N=3.0, h=1e-3,
                    Sigma0=1e2, M8=1.0):
-    """Type I migration time [s] for an embedded mass (draft eq.; Tanaka+2004).
+    """Type I migration time [s] for an embedded mass (paper Eq. mig; Tanaka+2004).
 
     tau ~ 0.5 Myr (N/3)^-1 (r0/1e4 rg)^-1/2 (M/1e2 Msun)^-1 (h/1e-3)^2
                   (Sigma0/1e2)^-1 (M_SMBH/1e8 Msun).

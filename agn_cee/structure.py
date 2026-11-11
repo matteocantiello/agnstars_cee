@@ -21,9 +21,12 @@ value. ``model.cs`` / ``model.cs_of_r`` return the fiducial gas-only speed, so e
 calculation that reads them (Case A, Case B, dephasing, strain) uses one consistent
 c_s; ``cs_tot_of_r`` / ``cs_iso_of_r`` give the alternatives for the reported brackets.
 
-The model also exposes the interior gravitational binding energy |Omega|, internal
-energy E_int and net binding |Omega|-E_int (MESA mass column, hydrostatic star only,
-excluding the spherically-integrated accretion stream).
+The model also exposes the star's gravitational binding energy |E_grav|, its
+internal (gas + radiation) energy E_int, and the net binding energy
+E_* = |E_grav| - E_int, the energy actually needed to unbind it. These use the
+MESA mass column and cover the hydrostatic star only, not the accretion stream.
+(The attribute is called ``omega_bind`` for historical reasons: the paper's
+|E_grav| was written |Omega| in earlier drafts.)
 """
 
 from dataclasses import dataclass
@@ -66,9 +69,9 @@ class StarStreamModel:
     rho_c: float             # central density [g/cm^3]
     cs_agn: float            # AGN sound speed [cm/s]
     rho_agn: float           # AGN density [g/cm^3]
-    omega_bind: float        # interior gravitational binding energy |Omega| [erg] (>0)
+    omega_bind: float        # gravitational binding energy |E_grav| of the star [erg] (>0)
     E_int: float             # interior internal energy [erg] (>0)
-    net_binding: float       # |Omega| - E_int [erg]
+    net_binding: float       # net binding energy E_* = |E_grav| - E_int [erg]
 
     def __post_init__(self):
         def clamp(y):
@@ -96,19 +99,35 @@ def load_mesa_profile(path):
 
 
 class _MesaProfileFallback:
-    """Minimal MESA-profile reader (header line 6 = names, data from line 7)."""
+    """Minimal MESA-profile reader, used when ``mesa_reader`` is not installed.
+
+    A MESA profile has a one-line header block (line 2 = names, line 3 = values;
+    e.g. ``star_mdot``, ``photosphere_L``) followed by the zone table (line 6 =
+    column names, data from line 7). Both are exposed as attributes, as in
+    ``mesa_reader``.
+    """
 
     def __init__(self, path):
-        names = None
+        names = hdr_names = hdr_vals = None
         rows = []
         with open(path) as fh:
             for i, line in enumerate(fh, start=1):
-                if i == 6:
+                if i == 2:
+                    hdr_names = line.split()
+                elif i == 3:
+                    hdr_vals = line.split()
+                elif i == 6:
                     names = line.split()
                 elif i >= 7 and line.strip():
                     rows.append([float(x) for x in line.split()])
         data = np.array(rows)
-        self._data = {n: data[:, j] for j, n in enumerate(names)}
+        self._data = {}
+        for n, v in zip(hdr_names, hdr_vals):
+            try:
+                self._data[n] = float(v)
+            except ValueError:           # non-numeric header entries (e.g. dates)
+                self._data[n] = v
+        self._data.update({n: data[:, j] for j, n in enumerate(names)})
 
     def __getattr__(self, name):
         try:
@@ -198,7 +217,7 @@ def build_model(profile_path, cs_agn=CS_AGN_DEFAULT, rho_agn=RHO_AGN_DEFAULT,
 
     # --- binding energy of the hydrostatic interior (MESA mass column, no stream) ---
     dM = np.diff(m_enc_int, prepend=0.0)
-    omega_bind = float(np.sum(cst.G * m_enc_int / np.maximum(r_int, 1.0) * dM))   # |Omega| > 0
+    omega_bind = float(np.sum(cst.G * m_enc_int / np.maximum(r_int, 1.0) * dM))   # |E_grav| > 0
     u_int = 1.5 * P_gas_int + 3.0 * P_rad_int                                     # u = 3/2 P_gas + 3 P_rad
     E_int = float(np.sum(u_int / rho_int * dM))
     net_binding = omega_bind - E_int

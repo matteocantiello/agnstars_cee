@@ -1,7 +1,7 @@
 """Drag, accretion, gravitational-wave, and orbital-energy formulae.
 
-Clean consolidation of ``CEE_functions.py``. All quantities are CGS. Functions
-are vectorised over array inputs where it makes sense.
+All quantities are in CGS units. Functions accept NumPy arrays where that makes
+sense, so they can be evaluated along a whole stellar profile at once.
 
 References
 ----------

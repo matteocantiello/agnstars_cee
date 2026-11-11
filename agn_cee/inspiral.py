@@ -129,18 +129,21 @@ def trajectory(sol, n_t=500):
 def destruction_energetics(model, m_co, eta=0.1, kappa=0.34):
     """Order-of-magnitude budget for what happens once the CO reaches the core.
 
-    Compares (i) the orbital energy released during the inspiral and
-    (ii) the accretion energy available, to the stellar binding energy, and
-    brackets the destruction timescale between the (feedback-free) Bondi rate
+    Compares the accretion energy available with the stellar binding energy, and
+    brackets the time to unbind the star between the (feedback-free) Bondi rate
     and the Eddington-limited rate.
 
-    The stellar binding energy is the interior gravitational |Omega| computed from the
-    MESA mass column (``model.omega_bind``), NOT ``model.U_bind[0]`` (which integrates the
-    reconstructed mass over the whole structure including the spherically-integrated
-    accretion stream). ``model.net_binding`` (|Omega|-E_int) is the smaller, radiation-
-    corrected value relevant to actually unbinding the envelope.
+    Not used for any figure or number in the paper. Note that ``E_orb_released`` is
+    the two-body orbital energy G m M_en / 2r where M_en ~ m, NOT the total energy
+    dissipated by drag during the sink: that is up to m |Phi_c| (~1e52 erg for a
+    10 Msun BH), and it is offset by the BH settling into the potential, so drag
+    alone cannot unbind the star (paper Sec. 3.3).
+
+    The stellar binding energy is the gravitational |E_grav| from the MESA mass
+    column (``model.omega_bind``); ``model.net_binding`` (|E_grav| - E_int) is the
+    smaller value relevant to actually unbinding the star.
     """
-    U_bind = model.omega_bind                          # interior gravitational |Omega| [erg]
+    U_bind = model.omega_bind                          # gravitational |E_grav| [erg]
     rho_c, cs_c = model.rho_c, model.cs_of_r(model.r[1])
 
     # orbital energy released sinking to where M_enc = m_co
