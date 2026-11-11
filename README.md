@@ -5,7 +5,7 @@ Code and data to reproduce
 > **Signatures of Compact Object Mergers Inside Stars in AGN Disks**
 > Cantiello et al. (2026)
 
-## What the paper is about, in brief
+## What the paper is about
 
 Gas disks around supermassive black holes (active galactic nuclei, AGN) can feed stars so quickly that fresh
 hydrogen reaches the stellar core as fast as it burns. These stars stop evolving and grow to hundreds of solar
